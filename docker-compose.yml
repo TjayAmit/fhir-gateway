@@ -1,0 +1,42 @@
+# Dev + CI support services for the FHIR gateway.
+#
+# The Laravel app itself runs on host PHP — only the validator is containerised,
+# because profile validation requires Java (decision D4: no Java in production).
+#
+#   docker compose up -d validator
+#   php artisan fhir:validate <file.json> --profile=<canonical>
+
+services:
+  validator:
+    # HL7 FHIR Validator (Java) wrapped in an HTTP API, as maintained by the Inferno team.
+    # Pinned — do not use :latest, validator behaviour changes between releases.
+    image: infernocommunity/inferno-resource-validator:1.0.84
+    container_name: fhir-validator
+    ports:
+      - "3500:3500"
+    volumes:
+      # IG tarballs are referenced by container path in cliContext.igs,
+      # e.g. "/igs/ph-core.tgz". See fhir-packages/SOURCES.md.
+      - ./fhir-packages:/igs:ro
+      # Cache resolved transitive packages (hl7.fhir.r4.core, hl7.terminology.r4,
+      # hl7.fhir.uv.extensions.r4) so restarts don't re-download them.
+      - validator-cache:/root/.fhir
+    environment:
+      # Disable the terminology server by default — PH Core's PSGC/PSOC/PSCED
+      # code systems are mocks and cannot be expanded anyway. Requests may still
+      # override this per-call via cliContext.txServer.
+      JAVA_OPTS: >-
+        -XX:+UnlockExperimentalVMOptions
+        -XX:InitialRAMPercentage=70
+        -XX:MaxRAMPercentage=70
+        -XX:+UseG1GC
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:3500/versions || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    restart: unless-stopped
+
+volumes:
+  validator-cache:

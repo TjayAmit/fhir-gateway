@@ -1,0 +1,27 @@
+{
+  "_comment": "Golden fixtures validated in CI. Add one entry per referral variant we can emit. A null profile validates against whatever meta.profile the resource declares. Files named generated-* are produced by `php artisan fhir:build-referral` from the matching intake fixture in tests/fixtures/intake/ - regenerate them rather than editing by hand.",
+  "fixtures": [
+    {
+      "file": "ph-core-patient.json",
+      "profile": "https://fhir.doh.gov.ph/phcore/StructureDefinition/ph-core-patient",
+      "note": "PH Core Patient: identifier slices, primitive extensions, PSGC address extensions (Coding)"
+    },
+    {
+      "file": "ereferral-submission-bundle.json",
+      "profile": null,
+      "note": "Real eReferral submission bundle from the IG - transaction, 21 entries, conditional PUT upserts"
+    },
+    {
+      "file": "generated-referral-bundle.json",
+      "profile": null,
+      "source": "tests/fixtures/intake/referral-kalibo.json",
+      "note": "Our output: emergency referral with encounter, 2 conditions, 3 vitals. Covers required category and reasonCode bindings, PSGC address, PRC-keyed PractitionerRole, conditional PUT identity block"
+    },
+    {
+      "file": "generated-telemedicine-bundle.json",
+      "profile": null,
+      "source": "tests/fixtures/intake/telemedicine-consult.json",
+      "note": "Our output: telemedicine consult. Patient has PhilHealth only, so the upsert keys on it. Covers the occurrenceDateTime constraint that forbids a scheduling window"
+    }
+  ]
+}

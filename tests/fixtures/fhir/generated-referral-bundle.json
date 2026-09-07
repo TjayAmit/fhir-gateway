@@ -1,0 +1,648 @@
+{
+    "resourceType": "Bundle",
+    "type": "transaction",
+    "entry": [
+        {
+            "fullUrl": "urn:uuid:ee6ecc7e-86af-4faa-bcde-74f8d996d358",
+            "resource": {
+                "resourceType": "Patient",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-patient"
+                    ]
+                },
+                "identifier": [
+                    {
+                        "system": "http://philsys.gov.ph/fhir/Identifier/philsys-id",
+                        "value": "7731-0812-4491-0326"
+                    },
+                    {
+                        "system": "http://philhealth.gov.ph/fhir/Identifier/philhealth-id",
+                        "value": "78-658064775-3"
+                    }
+                ],
+                "active": true,
+                "name": [
+                    {
+                        "use": "official",
+                        "family": "Reyes",
+                        "given": [
+                            "Ana",
+                            "Luisa"
+                        ]
+                    }
+                ],
+                "telecom": [
+                    {
+                        "system": "phone",
+                        "value": "+63-919-876-5432",
+                        "use": "mobile"
+                    }
+                ],
+                "gender": "female",
+                "birthDate": "1988-03-12",
+                "address": [
+                    {
+                        "extension": [
+                            {
+                                "url": "https://fhir.doh.gov.ph/phcore/StructureDefinition/region",
+                                "valueCoding": {
+                                    "system": "https://psa.gov.ph/classification/psgc",
+                                    "code": "0600000000"
+                                }
+                            },
+                            {
+                                "url": "https://fhir.doh.gov.ph/phcore/StructureDefinition/province",
+                                "valueCoding": {
+                                    "system": "https://psa.gov.ph/classification/psgc",
+                                    "code": "0600400000"
+                                }
+                            },
+                            {
+                                "url": "https://fhir.doh.gov.ph/phcore/StructureDefinition/city-municipality",
+                                "valueCoding": {
+                                    "system": "https://psa.gov.ph/classification/psgc",
+                                    "code": "0600407000"
+                                }
+                            },
+                            {
+                                "url": "https://fhir.doh.gov.ph/phcore/StructureDefinition/barangay",
+                                "valueCoding": {
+                                    "system": "https://psa.gov.ph/classification/psgc",
+                                    "code": "0600407013"
+                                }
+                            }
+                        ],
+                        "use": "home",
+                        "line": [
+                            "Area 4, Barangay Mabuhay"
+                        ],
+                        "postalCode": "5600",
+                        "country": "PH"
+                    }
+                ]
+            },
+            "request": {
+                "method": "PUT",
+                "url": "Patient?identifier=http://philsys.gov.ph/fhir/Identifier/philsys-id|7731-0812-4491-0326"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:9b093c2a-6a06-4e59-8bef-4251cbf2b4d9",
+            "resource": {
+                "resourceType": "Practitioner",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/phcore/StructureDefinition/ph-core-practitioner"
+                    ]
+                },
+                "identifier": [
+                    {
+                        "system": "https://prc.gov.ph/",
+                        "value": "5466863"
+                    }
+                ],
+                "active": true,
+                "name": [
+                    {
+                        "use": "official",
+                        "family": "Villanueva",
+                        "given": [
+                            "Maria"
+                        ]
+                    }
+                ],
+                "telecom": [
+                    {
+                        "system": "phone",
+                        "value": "+63-36-268-1234",
+                        "use": "work"
+                    },
+                    {
+                        "system": "email",
+                        "value": "mvillanueva@kalibohc.example.ph",
+                        "use": "work"
+                    }
+                ]
+            },
+            "request": {
+                "method": "PUT",
+                "url": "Practitioner?identifier=https://prc.gov.ph/|5466863"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:d803d068-01a6-43ac-aa4c-ef59af11c8b6",
+            "resource": {
+                "resourceType": "Organization",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/phcore/StructureDefinition/ph-core-organization"
+                    ]
+                },
+                "identifier": [
+                    {
+                        "system": "https://fhir.doh.gov.ph/phcore/Identifier/doh-nhfr-code",
+                        "value": "3056"
+                    }
+                ],
+                "active": true,
+                "name": "Kalibo Health Center"
+            },
+            "request": {
+                "method": "PUT",
+                "url": "Organization?identifier=https://fhir.doh.gov.ph/phcore/Identifier/doh-nhfr-code|3056"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:ed4a5c0c-2ed3-4995-9e0a-aff4591847f3",
+            "resource": {
+                "resourceType": "Organization",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/phcore/StructureDefinition/ph-core-organization"
+                    ]
+                },
+                "identifier": [
+                    {
+                        "system": "https://fhir.doh.gov.ph/phcore/Identifier/doh-nhfr-code",
+                        "value": "513"
+                    }
+                ],
+                "active": true,
+                "name": "Dr. Rafael S. Tumbokon Memorial Hospital"
+            },
+            "request": {
+                "method": "PUT",
+                "url": "Organization?identifier=https://fhir.doh.gov.ph/phcore/Identifier/doh-nhfr-code|513"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:90f98368-8ebd-4667-a4c4-df9d4fc617f6",
+            "resource": {
+                "resourceType": "PractitionerRole",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-practitioner-role"
+                    ]
+                },
+                "identifier": [
+                    {
+                        "system": "https://prc.gov.ph/",
+                        "value": "5466863"
+                    }
+                ],
+                "active": true,
+                "practitioner": {
+                    "reference": "urn:uuid:9b093c2a-6a06-4e59-8bef-4251cbf2b4d9"
+                },
+                "organization": {
+                    "reference": "urn:uuid:d803d068-01a6-43ac-aa4c-ef59af11c8b6"
+                },
+                "code": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "158965000",
+                                "display": "Doctor"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "request": {
+                "method": "PUT",
+                "url": "PractitionerRole?identifier=https://prc.gov.ph/|5466863"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:a72b2238-b039-421a-8c61-ad32d07080d2",
+            "resource": {
+                "resourceType": "Encounter",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-encounter"
+                    ]
+                },
+                "status": "finished",
+                "class": {
+                    "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+                    "code": "AMB",
+                    "display": "ambulatory"
+                },
+                "subject": {
+                    "reference": "urn:uuid:ee6ecc7e-86af-4faa-bcde-74f8d996d358"
+                },
+                "period": {
+                    "start": "2026-06-18T07:45:00+08:00",
+                    "end": "2026-06-18T08:25:00+08:00"
+                },
+                "serviceProvider": {
+                    "reference": "urn:uuid:d803d068-01a6-43ac-aa4c-ef59af11c8b6"
+                }
+            },
+            "request": {
+                "method": "POST",
+                "url": "Encounter"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:620616af-403b-411b-acbf-95f271b8bfbb",
+            "resource": {
+                "resourceType": "Condition",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-condition"
+                    ]
+                },
+                "clinicalStatus": {
+                    "coding": [
+                        {
+                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                            "code": "active",
+                            "display": "Active"
+                        }
+                    ]
+                },
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://snomed.info/sct",
+                            "code": "398254007",
+                            "display": "Pre-eclampsia"
+                        }
+                    ],
+                    "text": "Pre-eclampsia"
+                },
+                "subject": {
+                    "reference": "urn:uuid:ee6ecc7e-86af-4faa-bcde-74f8d996d358"
+                },
+                "encounter": {
+                    "reference": "urn:uuid:a72b2238-b039-421a-8c61-ad32d07080d2"
+                },
+                "recordedDate": "2026-06-18T08:30:00+08:00"
+            },
+            "request": {
+                "method": "POST",
+                "url": "Condition"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:c976d807-d390-457d-8633-03f0f7c1b4a4",
+            "resource": {
+                "resourceType": "Condition",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-condition"
+                    ]
+                },
+                "clinicalStatus": {
+                    "coding": [
+                        {
+                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                            "code": "active",
+                            "display": "Active"
+                        }
+                    ]
+                },
+                "code": {
+                    "text": "Proteinuria 3+"
+                },
+                "subject": {
+                    "reference": "urn:uuid:ee6ecc7e-86af-4faa-bcde-74f8d996d358"
+                },
+                "encounter": {
+                    "reference": "urn:uuid:a72b2238-b039-421a-8c61-ad32d07080d2"
+                },
+                "recordedDate": "2026-06-18T08:30:00+08:00"
+            },
+            "request": {
+                "method": "POST",
+                "url": "Condition"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:440ae2c7-822d-4351-8765-9cb3dd2b5f50",
+            "resource": {
+                "resourceType": "Observation",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-observation"
+                    ]
+                },
+                "status": "final",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "vital-signs",
+                                "display": "Vital Signs"
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "text": "Blood pressure"
+                },
+                "subject": {
+                    "reference": "urn:uuid:ee6ecc7e-86af-4faa-bcde-74f8d996d358"
+                },
+                "encounter": {
+                    "reference": "urn:uuid:a72b2238-b039-421a-8c61-ad32d07080d2"
+                },
+                "effectiveDateTime": "2026-06-18T07:50:00+08:00",
+                "valueString": "180/110 mmHg"
+            },
+            "request": {
+                "method": "POST",
+                "url": "Observation"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:db21b72c-5127-40cd-88e1-844492766382",
+            "resource": {
+                "resourceType": "Observation",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-observation"
+                    ]
+                },
+                "status": "final",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "vital-signs",
+                                "display": "Vital Signs"
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "8310-5",
+                            "display": "Body temperature"
+                        }
+                    ],
+                    "text": "Body temperature"
+                },
+                "subject": {
+                    "reference": "urn:uuid:ee6ecc7e-86af-4faa-bcde-74f8d996d358"
+                },
+                "encounter": {
+                    "reference": "urn:uuid:a72b2238-b039-421a-8c61-ad32d07080d2"
+                },
+                "effectiveDateTime": "2026-06-18T07:50:00+08:00",
+                "valueQuantity": {
+                    "value": 36.8,
+                    "unit": "Cel",
+                    "system": "http://unitsofmeasure.org",
+                    "code": "Cel"
+                }
+            },
+            "request": {
+                "method": "POST",
+                "url": "Observation"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:c9e691f0-feee-48b5-ba06-c78d2b96eaf4",
+            "resource": {
+                "resourceType": "Observation",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-observation"
+                    ]
+                },
+                "status": "final",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                                "code": "vital-signs",
+                                "display": "Vital Signs"
+                            }
+                        ]
+                    }
+                ],
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "8867-4",
+                            "display": "Heart rate"
+                        }
+                    ],
+                    "text": "Heart rate"
+                },
+                "subject": {
+                    "reference": "urn:uuid:ee6ecc7e-86af-4faa-bcde-74f8d996d358"
+                },
+                "encounter": {
+                    "reference": "urn:uuid:a72b2238-b039-421a-8c61-ad32d07080d2"
+                },
+                "effectiveDateTime": "2026-06-18T07:50:00+08:00",
+                "valueQuantity": {
+                    "value": 96,
+                    "unit": "/min",
+                    "system": "http://unitsofmeasure.org",
+                    "code": "/min"
+                }
+            },
+            "request": {
+                "method": "POST",
+                "url": "Observation"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:04dbb0a1-1113-4cc4-988f-e4d4d2c65f04",
+            "resource": {
+                "resourceType": "ServiceRequest",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-service-request"
+                    ]
+                },
+                "requisition": {
+                    "system": "urn:oid:1.2.840.113619.21.1.2",
+                    "value": "REF-2026-001234"
+                },
+                "status": "active",
+                "intent": "order",
+                "category": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "73770003",
+                                "display": "Emergency"
+                            }
+                        ],
+                        "text": "Emergency"
+                    }
+                ],
+                "priority": "urgent",
+                "subject": {
+                    "reference": "urn:uuid:ee6ecc7e-86af-4faa-bcde-74f8d996d358"
+                },
+                "encounter": {
+                    "reference": "urn:uuid:a72b2238-b039-421a-8c61-ad32d07080d2"
+                },
+                "occurrenceDateTime": "2026-06-18T08:30:00+08:00",
+                "authoredOn": "2026-06-18T08:30:00+08:00",
+                "requester": {
+                    "reference": "urn:uuid:90f98368-8ebd-4667-a4c4-df9d4fc617f6"
+                },
+                "performer": [
+                    {
+                        "reference": "urn:uuid:ed4a5c0c-2ed3-4995-9e0a-aff4591847f3"
+                    }
+                ],
+                "reasonCode": [
+                    {
+                        "coding": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "71388002",
+                                "display": "Procedure"
+                            }
+                        ],
+                        "text": "Severe pre-eclampsia requiring IV antihypertensive, seizure prophylaxis, and maternal-fetal monitoring"
+                    }
+                ],
+                "reasonReference": [
+                    {
+                        "reference": "urn:uuid:620616af-403b-411b-acbf-95f271b8bfbb"
+                    },
+                    {
+                        "reference": "urn:uuid:c976d807-d390-457d-8633-03f0f7c1b4a4"
+                    }
+                ],
+                "supportingInfo": [
+                    {
+                        "reference": "urn:uuid:440ae2c7-822d-4351-8765-9cb3dd2b5f50"
+                    },
+                    {
+                        "reference": "urn:uuid:db21b72c-5127-40cd-88e1-844492766382"
+                    },
+                    {
+                        "reference": "urn:uuid:c9e691f0-feee-48b5-ba06-c78d2b96eaf4"
+                    }
+                ],
+                "note": [
+                    {
+                        "text": "38-year-old G2P1, 32 weeks AOG. BP 180/110 mmHg with severe headache, dizziness, and blurring of vision. Proteinuria 3+."
+                    }
+                ]
+            },
+            "request": {
+                "method": "POST",
+                "url": "ServiceRequest"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:f6eddbee-c630-4e94-9d98-0bb0f8dc61bb",
+            "resource": {
+                "resourceType": "Task",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-task"
+                    ]
+                },
+                "identifier": [
+                    {
+                        "system": "https://gateway.local/fhir/Identifier/message-id",
+                        "value": "3f9a1c74-2b6e-4d18-9c33-1a5b7e0d4f21"
+                    }
+                ],
+                "status": "requested",
+                "intent": "order",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://snomed.info/sct",
+                            "code": "3457005",
+                            "display": "Patient referral"
+                        }
+                    ],
+                    "text": "Severe pre-eclampsia requiring IV antihypertensive, seizure prophylaxis, and maternal-fetal monitoring"
+                },
+                "focus": {
+                    "reference": "urn:uuid:04dbb0a1-1113-4cc4-988f-e4d4d2c65f04"
+                },
+                "for": {
+                    "reference": "urn:uuid:ee6ecc7e-86af-4faa-bcde-74f8d996d358"
+                },
+                "authoredOn": "2026-06-18T08:30:00+08:00",
+                "lastModified": "2026-06-18T08:30:00+08:00",
+                "requester": {
+                    "reference": "urn:uuid:90f98368-8ebd-4667-a4c4-df9d4fc617f6"
+                },
+                "owner": {
+                    "reference": "urn:uuid:ed4a5c0c-2ed3-4995-9e0a-aff4591847f3"
+                }
+            },
+            "request": {
+                "method": "POST",
+                "url": "Task",
+                "ifNoneExist": "identifier=https://gateway.local/fhir/Identifier/message-id|3f9a1c74-2b6e-4d18-9c33-1a5b7e0d4f21"
+            }
+        },
+        {
+            "fullUrl": "urn:uuid:a676a1c6-68aa-4ba7-aa81-b45d276f60e7",
+            "resource": {
+                "resourceType": "Provenance",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-provenance"
+                    ]
+                },
+                "target": [
+                    {
+                        "reference": "urn:uuid:04dbb0a1-1113-4cc4-988f-e4d4d2c65f04"
+                    }
+                ],
+                "recorded": "2026-06-18T08:30:00+08:00",
+                "agent": [
+                    {
+                        "type": {
+                            "coding": [
+                                {
+                                    "system": "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
+                                    "code": "author",
+                                    "display": "Author"
+                                }
+                            ]
+                        },
+                        "who": {
+                            "reference": "urn:uuid:90f98368-8ebd-4667-a4c4-df9d4fc617f6"
+                        }
+                    },
+                    {
+                        "type": {
+                            "coding": [
+                                {
+                                    "system": "http://terminology.hl7.org/CodeSystem/provenance-participant-type",
+                                    "code": "custodian",
+                                    "display": "Custodian"
+                                }
+                            ]
+                        },
+                        "who": {
+                            "reference": "urn:uuid:d803d068-01a6-43ac-aa4c-ef59af11c8b6"
+                        }
+                    }
+                ]
+            },
+            "request": {
+                "method": "POST",
+                "url": "Provenance"
+            }
+        }
+    ]
+}

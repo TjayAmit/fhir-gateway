@@ -1,0 +1,73 @@
+{
+  "message_id": "3f9a1c74-2b6e-4d18-9c33-1a5b7e0d4f21",
+  "sent_at": "2026-06-18T08:30:00+08:00",
+  "request_type": "referral",
+
+  "source": {
+    "system": "referral",
+    "record_id": "REF-2026-001234",
+    "facility_code": "3056",
+    "facility_name": "Kalibo Health Center",
+    "practitioner": {
+      "family_name": "Villanueva",
+      "given_names": ["Maria"],
+      "prc_license": "5466863",
+      "role": "physician",
+      "phone": "+63-36-268-1234",
+      "email": "mvillanueva@kalibohc.example.ph"
+    }
+  },
+
+  "destination": {
+    "hcpn_id": "drstmh-kalibo",
+    "department": "obstetrics"
+  },
+
+  "patient": {
+    "identifiers": [
+      { "type": "philsys", "value": "7731-0812-4491-0326" },
+      { "type": "philhealth", "value": "78-658064775-3" }
+    ],
+    "family_name": "Reyes",
+    "given_names": ["Ana", "Luisa"],
+    "birth_date": "1988-03-12",
+    "sex": "female",
+    "mobile": "+63-919-876-5432",
+    "address": {
+      "line": "Area 4, Barangay Mabuhay",
+      "barangay_psgc": "0600407013",
+      "city_psgc": "0600407000",
+      "province_psgc": "0600400000",
+      "region_psgc": "0600000000",
+      "postal_code": "5600"
+    }
+  },
+
+  "clinical": {
+    "reason_text": "Severe pre-eclampsia requiring IV antihypertensive, seizure prophylaxis, and maternal-fetal monitoring",
+    "notes": "38-year-old G2P1, 32 weeks AOG. BP 180/110 mmHg with severe headache, dizziness, and blurring of vision. Proteinuria 3+.",
+    "encounter": {
+      "class": "AMB",
+      "status": "finished",
+      "start": "2026-06-18T07:45:00+08:00",
+      "end": "2026-06-18T08:25:00+08:00"
+    },
+    "diagnoses": [
+      { "system": "snomed", "code": "398254007", "text": "Pre-eclampsia" },
+      { "system": "text", "text": "Proteinuria 3+" }
+    ],
+    "vitals": [
+      { "name": "Blood pressure", "value": "180/110", "unit": "mmHg", "taken_at": "2026-06-18T07:50:00+08:00" },
+      { "name": "Body temperature", "code": "8310-5", "value": 36.8, "unit": "Cel", "taken_at": "2026-06-18T07:50:00+08:00" },
+      { "name": "Heart rate", "code": "8867-4", "value": 96, "unit": "/min", "taken_at": "2026-06-18T07:50:00+08:00" }
+    ]
+  },
+
+  "referral": {
+    "category": "emergency",
+    "service_type": "procedure",
+    "priority": "urgent",
+    "service_requested": "Emergency obstetric management",
+    "specialty": "obstetrics"
+  }
+}

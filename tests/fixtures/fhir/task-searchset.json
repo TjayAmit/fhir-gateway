@@ -1,0 +1,164 @@
+{
+    "resourceType": "Bundle",
+    "type": "searchset",
+    "total": 3,
+    "entry": [
+        {
+            "fullUrl": "https://gateway.local/api/fhir/Task/task-2026-000481",
+            "resource": {
+                "resourceType": "Task",
+                "id": "task-2026-000481",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-task"
+                    ],
+                    "lastUpdated": "2026-06-18T09:12:00+00:00"
+                },
+                "status": "accepted",
+                "businessStatus": {
+                    "coding": [
+                        {
+                            "system": "https://fhir.doh.gov.ph/pheref/CodeSystem/ereferral-workflow",
+                            "code": "accepted"
+                        }
+                    ]
+                },
+                "intent": "order",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://snomed.info/sct",
+                            "code": "3457005",
+                            "display": "Patient referral"
+                        }
+                    ]
+                },
+                "focus": {
+                    "reference": "ServiceRequest/sr-2026-000481"
+                },
+                "for": {
+                    "reference": "Patient/pat-77213"
+                },
+                "authoredOn": "2026-06-18T08:30:00+00:00",
+                "lastModified": "2026-06-18T09:12:00+00:00",
+                "requester": {
+                    "type": "Organization",
+                    "identifier": {
+                        "system": "https://fhir.doh.gov.ph/phcore/Identifier/doh-nhfr-code",
+                        "value": "3056"
+                    }
+                },
+                "owner": {
+                    "type": "Organization",
+                    "identifier": {
+                        "system": "https://fhir.doh.gov.ph/phcore/Identifier/doh-nhfr-code",
+                        "value": "513"
+                    }
+                }
+            }
+        },
+        {
+            "fullUrl": "https://gateway.local/api/fhir/Task/task-2026-000482",
+            "resource": {
+                "resourceType": "Task",
+                "id": "task-2026-000482",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-task"
+                    ],
+                    "lastUpdated": "2026-09-07T10:15:00+00:00"
+                },
+                "status": "requested",
+                "intent": "order",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://snomed.info/sct",
+                            "code": "3457005",
+                            "display": "Patient referral"
+                        }
+                    ]
+                },
+                "focus": {
+                    "reference": "ServiceRequest/sr-2026-000482"
+                },
+                "for": {
+                    "reference": "Patient/pat-90114"
+                },
+                "authoredOn": "2026-09-07T10:15:00+00:00",
+                "lastModified": "2026-09-07T10:15:00+00:00",
+                "requester": {
+                    "type": "Organization",
+                    "identifier": {
+                        "system": "https://fhir.doh.gov.ph/phcore/Identifier/doh-nhfr-code",
+                        "value": "3056"
+                    }
+                },
+                "owner": {
+                    "type": "Organization",
+                    "identifier": {
+                        "system": "https://fhir.doh.gov.ph/phcore/Identifier/doh-nhfr-code",
+                        "value": "DOH000000000000001"
+                    }
+                }
+            }
+        },
+        {
+            "fullUrl": "https://gateway.local/api/fhir/Task/task-2026-000483",
+            "resource": {
+                "resourceType": "Task",
+                "id": "task-2026-000483",
+                "meta": {
+                    "profile": [
+                        "https://fhir.doh.gov.ph/pheref/StructureDefinition/ereferral-task"
+                    ],
+                    "lastUpdated": "2026-09-05T15:40:00+00:00"
+                },
+                "status": "rejected",
+                "businessStatus": {
+                    "coding": [
+                        {
+                            "system": "https://fhir.doh.gov.ph/pheref/CodeSystem/ereferral-workflow",
+                            "code": "capacity-full"
+                        }
+                    ]
+                },
+                "statusReason": {
+                    "text": "No obstetric beds available"
+                },
+                "intent": "order",
+                "code": {
+                    "coding": [
+                        {
+                            "system": "http://snomed.info/sct",
+                            "code": "3457005",
+                            "display": "Patient referral"
+                        }
+                    ]
+                },
+                "focus": {
+                    "reference": "ServiceRequest/sr-2026-000483"
+                },
+                "for": {
+                    "reference": "Patient/pat-77213"
+                },
+                "authoredOn": "2026-09-05T14:02:00+00:00",
+                "lastModified": "2026-09-05T15:40:00+00:00",
+                "requester": {
+                    "type": "Organization",
+                    "identifier": {
+                        "system": "https://fhir.doh.gov.ph/phcore/Identifier/doh-nhfr-code",
+                        "value": "3056"
+                    }
+                },
+                "owner": {
+                    "type": "Organization",
+                    "identifier": {
+                        "system": "https://fhir.doh.gov.ph/phcore/Identifier/doh-nhfr-code",
+                        "value": "513"
+                    }
+                }
+            }
+        }
+    ]
+}

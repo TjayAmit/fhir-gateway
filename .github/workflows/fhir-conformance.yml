@@ -1,0 +1,98 @@
+name: fhir-conformance
+
+# Validates every golden fixture against the pinned PH Core / eReferral IGs.
+#
+# This is the project's only real conformance gate (decision D4). The PHP layer silently
+# drops unknown fields and cannot check profiles, bindings, or slicing — if this job does
+# not run, nothing verifies that what we emit is actually PH Core conformant.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  # IG builds move; a scheduled run catches upstream drift against our pinned tarballs.
+  schedule:
+    - cron: '0 2 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          touch database/database.sqlite
+
+      - name: Start FHIR validator
+        run: docker compose up -d validator
+
+      - name: Wait for validator
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf --max-time 5 http://localhost:3500/versions > /dev/null; then
+              echo "validator ready after ${i} attempt(s)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "validator did not become ready"
+          exit 1
+
+      - name: Validate golden fixtures
+        run: |
+          set -uo pipefail
+          MANIFEST=tests/fixtures/fhir/manifest.json
+          FAILED=0
+
+          # One `fhir:validate` run per fixture, driven by the manifest so that adding a
+          # fixture never requires editing this workflow.
+          while IFS=$'\t' read -r file profile; do
+            echo "::group::${file}"
+            if [ "${profile}" = "-" ]; then
+              php artisan fhir:validate "tests/fixtures/fhir/${file}"
+            else
+              php artisan fhir:validate "tests/fixtures/fhir/${file}" --profile="${profile}"
+            fi
+            status=$?
+            echo "::endgroup::"
+            if [ $status -ne 0 ]; then
+              echo "::error file=tests/fixtures/fhir/${file}::FHIR validation failed"
+              FAILED=1
+            fi
+          done < <(php -r '
+            $m = json_decode(file_get_contents($argv[1]), true);
+            foreach ($m["fixtures"] as $f) {
+              echo $f["file"], "\t", $f["profile"] ?? "-", "\n";
+            }
+          ' "$MANIFEST")
+
+          exit $FAILED
+
+      - name: Validator logs on failure
+        if: failure()
+        run: docker compose logs validator | tail -100
+
+      - name: Stop validator
+        if: always()
+        run: docker compose down -v

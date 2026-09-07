@@ -1,0 +1,5 @@
+{
+    "require": {
+        "dcarbone/php-fhir-generated": "^4.1"
+    }
+}

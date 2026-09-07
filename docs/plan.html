@@ -1,0 +1,967 @@
+<title>PH Referral Gateway Blueprint</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  /* ---- Light palette (complete set; dark blocks below redefine tokens only) ---- */
+  :root {
+    --ground:      #F1F4F3;
+    --surface:     #FFFFFF;
+    --surface-alt: #E9EEEC;
+    --ink:         #101B1E;
+    --ink-soft:    #3D4F51;
+    --ink-mute:    #64777A;
+    --rule:        #D2DCDA;
+    --rule-soft:   #E2E9E7;
+
+    --accent:      #0B6A63;
+    --accent-deep: #084F4A;
+    --accent-wash: #DCEAE7;
+
+    --ok:          #2F6B4F;
+    --ok-wash:     #DFEDE5;
+    --warn:        #8A6410;
+    --warn-wash:   #F3E9D2;
+    --risk:        #9E3B2D;
+    --risk-wash:   #F4E2DE;
+
+    --shadow: 0 1px 2px rgba(16, 27, 30, .05), 0 8px 24px -16px rgba(16, 27, 30, .28);
+
+    --display: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0C1416;
+      --surface:     #131F21;
+      --surface-alt: #182629;
+      --ink:         #E5EDEC;
+      --ink-soft:    #B3C3C2;
+      --ink-mute:    #82989A;
+      --rule:        #27393B;
+      --rule-soft:   #1E2E30;
+
+      --accent:      #4FB3A6;
+      --accent-deep: #7FCEC3;
+      --accent-wash: #16302E;
+
+      --ok:          #6FBE93;
+      --ok-wash:     #142C21;
+      --warn:        #D6A94A;
+      --warn-wash:   #2E2412;
+      --risk:        #E08472;
+      --risk-wash:   #331914;
+
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0C1416;
+    --surface:     #131F21;
+    --surface-alt: #182629;
+    --ink:         #E5EDEC;
+    --ink-soft:    #B3C3C2;
+    --ink-mute:    #82989A;
+    --rule:        #27393B;
+    --rule-soft:   #1E2E30;
+
+    --accent:      #4FB3A6;
+    --accent-deep: #7FCEC3;
+    --accent-wash: #16302E;
+
+    --ok:          #6FBE93;
+    --ok-wash:     #142C21;
+    --warn:        #D6A94A;
+    --warn-wash:   #2E2412;
+    --risk:        #E08472;
+    --risk-wash:   #331914;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+  }
+
+  /* ---- Base ---- */
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    display: grid;
+    grid-template-columns:
+      [full-start] minmax(1.25rem, 1fr)
+      [main-start] min(42rem, 100%) [main-end]
+      minmax(1.25rem, 1fr) [full-end];
+    row-gap: 1.15rem;
+    padding-block: 0 5rem;
+  }
+  .page > * { grid-column: main; }
+  .page > .bleed { grid-column: full; }
+  .bleed > .bleed-inner {
+    max-width: 68rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  h1, h2, h3 { text-wrap: balance; margin: 0; }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 5.5vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.75rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-top: 1.6rem;
+  }
+
+  h3 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: -0.005em;
+    margin-top: .9rem;
+  }
+
+  p { margin: 0; }
+  strong { font-weight: 600; }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  code, .mono {
+    font-family: var(--mono);
+    font-size: .87em;
+  }
+  :not(pre) > code {
+    background: var(--surface-alt);
+    border: 1px solid var(--rule-soft);
+    border-radius: 3px;
+    padding: .05em .34em;
+    white-space: nowrap;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .lede {
+    font-family: var(--display);
+    font-size: 1.22rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--rule);
+    margin: 1.4rem 0 .4rem;
+  }
+
+  /* ---- Masthead ---- */
+  .masthead {
+    padding-top: 3.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .masthead .rule-accent {
+    width: 3.5rem;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.4rem;
+    font-family: var(--mono);
+    font-size: .74rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .meta-row span { display: inline-flex; align-items: center; gap: .4rem; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+  /* ---- Section heads ---- */
+  .sec-head { display: flex; flex-direction: column; gap: .3rem; margin-top: 2.4rem; }
+
+  /* ---- Chips ---- */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    font-weight: 500;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .16rem .5rem;
+    border-radius: 3px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .chip-locked   { background: var(--ok-wash);   color: var(--ok);   border-color: color-mix(in srgb, var(--ok) 30%, transparent); }
+  .chip-open     { background: var(--warn-wash); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 30%, transparent); }
+  .chip-deferred { background: var(--surface-alt); color: var(--ink-mute); border-color: var(--rule); }
+  .chip-risk     { background: var(--risk-wash); color: var(--risk); border-color: color-mix(in srgb, var(--risk) 30%, transparent); }
+
+  /* ---- Cards / callouts ---- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1.1rem 1.2rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+  }
+
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-wash);
+    padding: .85rem 1rem;
+    border-radius: 0 4px 4px 0;
+    font-size: .95rem;
+    color: var(--ink-soft);
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+  }
+  .note strong { color: var(--ink); }
+
+  /* ---- Lists ---- */
+  ul.clean, ol.clean {
+    margin: 0;
+    padding-left: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+  }
+  ul.clean li::marker { color: var(--accent); }
+  ol.clean li::marker { color: var(--ink-mute); font-family: var(--mono); font-size: .85em; }
+
+  /* ---- Tables ---- */
+  .table-wrap {
+    overflow-x: auto;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: .92rem;
+    font-variant-numeric: tabular-nums;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: .65rem .85rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  thead th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    background: var(--surface-alt);
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.tight { white-space: nowrap; }
+  .col-why { color: var(--ink-soft); }
+
+  /* ---- Diagram panels ---- */
+  figure.diagram {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  figure.diagram figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .3rem .7rem;
+    padding: .7rem 1rem;
+    border-bottom: 1px solid var(--rule-soft);
+    background: var(--surface-alt);
+  }
+  figcaption .cap-kind {
+    font-family: var(--mono);
+    font-size: .68rem;
+    font-weight: 500;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  figcaption .cap-title { font-weight: 600; font-size: .95rem; }
+  figcaption .cap-note { font-size: .85rem; color: var(--ink-mute); }
+  .diagram-scroll { overflow-x: auto; padding: 1.2rem 1rem; }
+  pre.mermaid {
+    margin: 0;
+    background: transparent;
+    text-align: center;
+    min-width: 30rem;
+  }
+
+  /* ---- Risk list ---- */
+  .risks { display: flex; flex-direction: column; gap: .6rem; }
+  .risk-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .1rem .9rem;
+    align-items: baseline;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--rule);
+    border-radius: 0 5px 5px 0;
+    padding: .75rem 1rem;
+  }
+  .risk-item[data-sev="high"] { border-left-color: var(--risk); }
+  .risk-item[data-sev="med"]  { border-left-color: var(--warn); }
+  .risk-item[data-sev="low"]  { border-left-color: var(--ink-mute); }
+  .risk-item .rank {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-mute);
+    font-variant-numeric: tabular-nums;
+  }
+  .risk-item .r-title { font-weight: 600; font-size: .97rem; }
+  .risk-item .r-body { grid-column: 2; color: var(--ink-soft); font-size: .92rem; }
+
+  /* ---- Scope columns ---- */
+  .scope-grid {
+    display: grid;
+    gap: .9rem;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  }
+  .scope-grid h3 { margin: 0; display: flex; align-items: center; gap: .5rem; }
+
+  /* ---- Slice steps: a real sequence, so numbered ---- */
+  ol.slice {
+    counter-reset: step;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+  }
+  ol.slice li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 1.7rem 1fr;
+    gap: .8rem;
+    align-items: baseline;
+  }
+  ol.slice li::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  details.qa {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: .7rem 1rem;
+  }
+  details.qa summary { cursor: pointer; font-weight: 600; font-size: .95rem; }
+  details.qa > div { padding-top: .6rem; color: var(--ink-soft); font-size: .93rem; display: flex; flex-direction: column; gap: .5rem; }
+
+  footer.foot {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: .74rem;
+    letter-spacing: .06em;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="rule-accent"></div>
+    <span class="eyebrow">Scope &amp; purpose · v1</span>
+    <h1>PH Referral Gateway</h1>
+    <p class="lede">A translation middleware. Our referral and telemedicine systems send plain
+      JSON; the gateway turns it into PH&nbsp;Core and PH&nbsp;eReferral FHIR and delivers it to a
+      destination the sender never has to know about.</p>
+    <div class="meta-row">
+      <span><i class="dot"></i>Updated 7 Sep 2026</span>
+      <span>Phase 2 complete</span>
+      <span>First slice shipped</span>
+      <span>FHIR R4 · 4.0.1</span>
+    </div>
+  </header>
+
+  <hr>
+
+  <div class="sec-head">
+    <span class="eyebrow">01 · Purpose</span>
+    <h2>What this gateway is for</h2>
+  </div>
+
+  <p>Two of our systems need to send patient referrals and telemedicine requests to other
+    facilities, and eventually to HCPNs across the country. Those destinations expect FHIR
+    conforming to the Philippine IGs. Our systems do not speak FHIR, and should not have to.</p>
+
+  <p>The gateway sits between them and does three jobs: it <strong>translates</strong> our JSON into
+    conformant FHIR, it <strong>routes</strong> to a destination chosen from a registry it owns, and it
+    <strong>resolves patient identity</strong> at the receiving end using national IDs.</p>
+
+  <div class="note">
+    <span><strong>It is a facade, not a repository.</strong> The gateway stores no clinical or
+      demographic data. Every request is translated in flight from a native record that stays where
+      it is. A retry re-reads the source rather than replaying a stored payload.</span>
+    <span>This is the founding constraint. A design that needs the gateway to hold patient data has
+      stopped being a facade, and at that point we would be better off adopting a FHIR server.</span>
+  </div>
+
+  <div class="sec-head">
+    <span class="eyebrow">02 · Context</span>
+    <h2>The pieces and who owns them</h2>
+  </div>
+
+  <div class="bleed"><div class="bleed-inner">
+    <figure class="diagram">
+      <figcaption>
+        <span class="cap-kind">Component</span>
+        <span class="cap-title">System context</span>
+        <span class="cap-note">Dashed = deferred past v1</span>
+      </figcaption>
+      <div class="diagram-scroll">
+<pre class="mermaid">
+flowchart LR
+  subgraph OURS["Our estate"]
+    direction TB
+    REF["Referral system<br/>native DB"]
+    TEL["Telemedicine system<br/>native DB · external patients"]
+    MPI[("Master Patient Index<br/>built, under test")]
+  end
+
+  subgraph GW["FHIR Gateway"]
+    direction TB
+    IN["Intake API<br/>POST /intake/v1/requests"]
+    REG["Destination registry<br/>Organization + Endpoint"]
+    TR["Translator<br/>JSON to PH Core / eReferral"]
+    DEL["Delivery<br/>transaction Bundle"]
+  end
+
+  subgraph CI["Conformance"]
+    VAL["HL7 validator<br/>pinned IG tarballs"]
+  end
+
+  EXT["External HCPN facilities"]
+
+  REF --> IN
+  TEL --> IN
+  IN --> TR
+  REG --> TR
+  TR --> DEL
+  DEL --> TEL
+  DEL --> REF
+  DEL -.-> EXT
+  TR -.->|golden fixtures| VAL
+  MPI -.->|keeps records clean<br/>runtime role undecided| OURS
+</pre>
+      </div>
+    </figure>
+  </div></div>
+
+  <p>The registry is the reason senders stay simple. They pick an opaque destination id from a list
+    the gateway publishes; endpoints, credentials and transport never leave the gateway. Onboarding a
+    new facility changes nothing in the referral or telemedicine code.</p>
+
+  <div class="sec-head">
+    <span class="eyebrow">03 · Process</span>
+    <h2>Submitting a referral</h2>
+  </div>
+
+  <div class="bleed"><div class="bleed-inner">
+    <figure class="diagram">
+      <figcaption>
+        <span class="cap-kind">Sequence</span>
+        <span class="cap-title">Intake to delivery</span>
+        <span class="cap-note">Happy path plus identity branches</span>
+      </figcaption>
+      <div class="diagram-scroll">
+<pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant S as Referral system
+  participant G as Gateway
+  participant R as Receiving system
+
+  S->>G: GET /registry/v1/hcpn
+  G-->>S: destination list
+  S->>G: POST /intake/v1/requests<br/>intake JSON, PhilSys + PhilHealth
+  G->>G: schema check, idempotency key
+  G-->>S: 202 Accepted, gateway_ref
+
+  Note over G: Translate to PH Core / eReferral
+
+  G->>R: GET Patient?identifier=philsys
+  alt PhilSys matches
+    R-->>G: Patient
+  else no match
+    G->>R: GET Patient?identifier=philhealth
+    alt PhilHealth matches
+      R-->>G: Patient
+    else neither matches
+      G->>R: POST Patient
+      R-->>G: registered Patient
+    end
+  end
+
+  opt matched record missing the other ID
+    G->>R: PUT Patient, backfill identifier
+  end
+
+  G->>R: POST Bundle transaction<br/>ServiceRequest + Task
+  R-->>G: 201 Created, Task id
+  S->>G: GET /intake/v1/requests/{id}
+  G-->>S: delivered
+</pre>
+      </div>
+    </figure>
+  </div></div>
+
+  <div class="sec-head">
+    <span class="eyebrow">04 · Process</span>
+    <h2>Finding the patient</h2>
+  </div>
+
+  <p>Identity is solved at capture, not at integration. Policy requires triage to record
+    <strong>both</strong> PhilSys and PhilHealth for every patient, so the gateway never has to guess
+    whether two people are the same person. Matching on names and birth dates was considered and
+    rejected: its false-match rate is worse than the problem it solves.</p>
+
+  <div class="bleed"><div class="bleed-inner">
+    <figure class="diagram">
+      <figcaption>
+        <span class="cap-kind">Activity</span>
+        <span class="cap-title">Patient identity resolution</span>
+        <span class="cap-note">Either ID is sufficient; the second is the fallback</span>
+      </figcaption>
+      <div class="diagram-scroll">
+<pre class="mermaid">
+flowchart TD
+  A["Intake accepted<br/>PhilSys + PhilHealth supplied"] --> B{"PhilSys matches<br/>a record?"}
+  B -->|yes| C["Use that patient"]
+  B -->|no| D{"PhilHealth matches<br/>a record?"}
+  D -->|yes| C
+  D -->|no| E["Not registered here<br/>POST Patient"]
+  E --> F["Attach referral"]
+  C --> G{"Other ID on<br/>the matched record?"}
+  G -->|blank| H["Backfill it<br/>IDs propagate over time"]
+  G -->|present and different| I["Do not overwrite<br/>409 + OperationOutcome"]
+  H --> F
+  I --> J["Steward reviews"]
+
+  style I fill:#F4E2DE,stroke:#9E3B2D,color:#5C2018
+  style E fill:#F3E9D2,stroke:#8A6410,color:#4A3608
+</pre>
+      </div>
+    </figure>
+  </div></div>
+
+  <div class="note">
+    <span><strong>Awaiting your confirmation.</strong> The red branch is my recommendation, not a
+      locked decision. If PhilSys resolves to one patient and PhilHealth to a different one, the
+      gateway refuses rather than picking. Merging two charts silently combines two people's
+      allergies and medications, and downstream copies make it hard to undo. A refusal is only
+      inconvenient — and each one is a free duplicate report for the MPI.</span>
+  </div>
+
+  <div class="sec-head">
+    <span class="eyebrow">05 · Process</span>
+    <h2>Delivery lifecycle</h2>
+  </div>
+
+  <div class="bleed"><div class="bleed-inner">
+    <figure class="diagram">
+      <figcaption>
+        <span class="cap-kind">State</span>
+        <span class="cap-title">What the gateway tracks</span>
+        <span class="cap-note">Delivery state only — clinical outcome belongs to the receiver</span>
+      </figcaption>
+      <div class="diagram-scroll">
+<pre class="mermaid">
+stateDiagram-v2
+  direction LR
+  [*] --> pending: 202 Accepted
+  pending --> sending: worker picks up
+  sending --> delivered: receiver returns Task
+  sending --> failed: transport or validation error
+  failed --> sending: retry
+  delivered --> [*]
+
+  note right of failed
+    No payload is stored.
+    A retry re-reads the native
+    record and re-translates,
+    so it always sends current data.
+  end note
+
+  note right of delivered
+    Clinical status after this point
+    is the receiver's Task business
+    status: received, accepted,
+    rejected, referred-onward,
+    capacity-full.
+  end note
+</pre>
+      </div>
+    </figure>
+  </div></div>
+
+  <div class="sec-head">
+    <span class="eyebrow">06 · Decisions</span>
+    <h2>Locked</h2>
+  </div>
+
+  <p>These survived the review and should not be reopened without a reason that is written down.</p>
+
+  <div class="bleed"><div class="bleed-inner">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Area</th><th>Decision</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tight">Scope</td>
+            <td>No external HCPN receives anything in v1</td>
+            <td class="col-why">The first receiver is our own second system. Removes an external
+              dependency from the critical path and makes the first slice testable end to end.</td>
+          </tr>
+          <tr>
+            <td class="tight">Storage</td>
+            <td>No clinical or demographic persistence</td>
+            <td class="col-why">A facade that needs its own patient store is not a facade. Only
+              operational tables: identity map, referral state, outbox, audit.</td>
+          </tr>
+          <tr>
+            <td class="tight">Intake</td>
+            <td>Gateway defines its own non-FHIR JSON contract</td>
+            <td class="col-why">Native systems should never learn FHIR. If a field in the contract
+              looks like FHIR, that is a leak.</td>
+          </tr>
+          <tr>
+            <td class="tight">Routing</td>
+            <td>Sender picks an opaque <code>hcpn_id</code>, never an endpoint</td>
+            <td class="col-why">Adding a destination becomes a gateway config change instead of a
+              release of two other systems.</td>
+          </tr>
+          <tr>
+            <td class="tight">Registry</td>
+            <td>PH Core <code>Organization</code> + R4 <code>Endpoint</code>, hand-seeded from the
+              government facility list</td>
+            <td class="col-why">No national endpoint directory exists yet. Modelling it as FHIR now
+              means a future directory replaces the <em>seeding</em>, not the design. PH Core already
+              profiles NHFR, HCPN, PAN and PEN identifiers and <code>partOf</code> for hierarchy.</td>
+          </tr>
+          <tr>
+            <td class="tight">Identity capture</td>
+            <td>Both PhilSys and PhilHealth required at triage, by policy</td>
+            <td class="col-why">Fixes the problem where it originates. The patient supplies both IDs,
+              so a policy at the desk beats probabilistic matching downstream.</td>
+          </tr>
+          <tr>
+            <td class="tight">Identity match</td>
+            <td>Either ID is sufficient; neither matches means register</td>
+            <td class="col-why">The second ID is the fallback for records created before the policy,
+              which may carry only one.</td>
+          </tr>
+          <tr>
+            <td class="tight">ID propagation</td>
+            <td>Backfill a missing identifier onto a matched record</td>
+            <td class="col-why">Identifiers converge as traffic flows, so the gap closes itself
+              instead of needing a migration.</td>
+          </tr>
+          <tr>
+            <td class="tight">Conformance</td>
+            <td>HL7 validator plus pinned IG tarballs, enforced in CI</td>
+            <td class="col-why">The PHP layer silently drops fields it does not recognise. Without
+              this gate nothing verifies that what we emit is actually conformant.</td>
+          </tr>
+          <tr>
+            <td class="tight">Access</td>
+            <td>Every read gets a server-side scope filter the caller cannot remove</td>
+            <td class="col-why">Incoming queries are never trusted. Audit logging is a legal
+              obligation once we broker patient data.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div></div>
+
+  <div class="sec-head">
+    <span class="eyebrow">07 · Boundaries</span>
+    <h2>In and out for v1</h2>
+  </div>
+
+  <div class="scope-grid">
+    <div class="card">
+      <h3><span class="chip chip-locked">In</span></h3>
+      <ul class="clean">
+        <li>Intake API and its JSON contract</li>
+        <li>Destination registry and picklist</li>
+        <li>Translation to PH Core and eReferral</li>
+        <li>Patient lookup, register, ID backfill</li>
+        <li>Referral and telemedicine request types</li>
+        <li>Delivery between our two systems</li>
+        <li>CI conformance gate</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="chip chip-deferred">Out</span></h3>
+      <ul class="clean">
+        <li>Delivery to external HCPNs</li>
+        <li>HCPN reading or searching our data</li>
+        <li>Storing any clinical or demographic record</li>
+        <li>Demographic or fuzzy patient matching</li>
+        <li>Attachment hosting — references only</li>
+        <li>Cancelling or amending a sent referral</li>
+        <li>PSGC lookup from address text</li>
+      </ul>
+    </div>
+  </div>
+
+  <p style="margin-top:.5rem">Out does not mean never. HCPN read access and outbound delivery stay on
+    the roadmap; they are simply not in the first release, and nothing in the design blocks them.</p>
+
+  <div class="sec-head">
+    <span class="eyebrow">08 · Risks</span>
+    <h2>Still open, worst first</h2>
+  </div>
+
+  <div class="risks">
+    <div class="risk-item" data-sev="high">
+      <span class="rank">01</span>
+      <span class="r-title">Conflicting identifier hit</span>
+      <span class="r-body"><strong>Built as the safe default:</strong> the gateway refuses with a
+        <code>409</code> and sends nothing. Still needs your sign-off — reversing it to "pick one"
+        is a config change, but it would merge two charts.</span>
+    </div>
+    <div class="risk-item" data-sev="high">
+      <span class="rank">02</span>
+      <span class="r-title">Telemedicine does not fit ServiceRequest cleanly</span>
+      <span class="r-body"><strong>Confirmed by the validator.</strong> The IG slices
+        <code>occurrence[x]</code> closed on <code>occurrenceDateTime</code>, so a consult
+        <em>window</em> cannot be expressed structurally. We send the start and put the full window
+        in a note. <code>Appointment</code> is the alternative, but the IG does not profile it.</span>
+    </div>
+    <div class="risk-item" data-sev="med">
+      <span class="rank">03</span>
+      <span class="r-title">MPI is untested and its runtime role is undecided</span>
+      <span class="r-body">Is it queried per request, or does it only keep the systems clean in the
+        background? The answer changes whether it sits on the critical path.</span>
+    </div>
+    <div class="risk-item" data-sev="med">
+      <span class="rank">04</span>
+      <span class="r-title">Native systems may not store PSGC codes</span>
+      <span class="r-body">PH Core address extensions need codes, not place names. If the systems
+        hold only text, a lookup table becomes unscoped work.</span>
+    </div>
+    <div class="risk-item" data-sev="med">
+      <span class="rank">05</span>
+      <span class="r-title">Attachment transport unknown</span>
+      <span class="r-body">The contract assumes a fetchable URL. If the systems only have files on
+        disk, the contract changes.</span>
+    </div>
+    <div class="risk-item" data-sev="low">
+      <span class="rank">06</span>
+      <span class="r-title">Newborns and patients without PhilSys</span>
+      <span class="r-body">Deliberately left permissive. The registration process is not known yet,
+        so the rule is not written.</span>
+    </div>
+    <div class="risk-item" data-sev="low">
+      <span class="rank">07</span>
+      <span class="r-title">PSOC code system conflict between the two IGs</span>
+      <span class="r-body">An upstream defect. We pick one canonical deliberately and record the
+        choice.</span>
+    </div>
+    <div class="risk-item" data-sev="low">
+      <span class="rank">08</span>
+      <span class="r-title">No verb for withdrawal</span>
+      <span class="r-body">A sender cannot currently cancel or amend a referral already delivered.</span>
+    </div>
+  </div>
+
+  <div class="sec-head">
+    <span class="eyebrow">09 · Status</span>
+    <h2>What runs today</h2>
+  </div>
+
+  <p>The translation layer and the outbound flow are built and green. Three endpoints, two
+    console commands, and four golden fixtures that CI validates against the pinned IGs on
+    every push.</p>
+
+  <div class="bleed"><div class="bleed-inner">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Surface</th><th>What it does</th><th>State</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tight"><code>GET /api/registry/v1/hcpn</code></td>
+            <td>The destination picklist. Hides facilities with no endpoint; never returns
+              endpoints or credentials.</td>
+            <td class="tight"><span class="chip chip-locked">Built</span></td>
+          </tr>
+          <tr>
+            <td class="tight"><code>POST /api/intake/v1/requests</code></td>
+            <td>Plain JSON in, PH eReferral transaction Bundle out, delivered to the receiver.
+              Resolves the patient first, refuses on conflict.</td>
+            <td class="tight"><span class="chip chip-locked">Built</span></td>
+          </tr>
+          <tr>
+            <td class="tight"><code>GET /api/intake/v1/requests/{id}</code></td>
+            <td>Delivery status for one submission.</td>
+            <td class="tight"><span class="chip chip-locked">Built</span></td>
+          </tr>
+          <tr>
+            <td class="tight"><code>fhir:build-referral</code></td>
+            <td>Translate an intake file without sending it. Regenerates the golden fixtures.</td>
+            <td class="tight"><span class="chip chip-locked">Built</span></td>
+          </tr>
+          <tr>
+            <td class="tight"><code>fhir:validate</code></td>
+            <td>Check any resource against the pinned IGs.</td>
+            <td class="tight"><span class="chip chip-locked">Built</span></td>
+          </tr>
+          <tr>
+            <td class="tight">Per-system auth</td>
+            <td>Bearer tokens on the intake and registry routes.</td>
+            <td class="tight"><span class="chip chip-open">Not wired</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div></div>
+
+  <div class="note">
+    <span><strong>These routes have no authentication yet.</strong> Do not expose them outside
+      the local network until per-system tokens are in place. It is the first task of the policy
+      phase.</span>
+  </div>
+
+  <h3>What the validator caught that PHP did not</h3>
+
+  <p>Each of these was serialised without complaint by the PHP layer and rejected by the HL7
+    validator. This is the concrete argument for the CI gate being non-optional.</p>
+
+  <ol class="clean">
+    <li>PSGC address extensions need <code>Coding</code>, not <code>CodeableConcept</code>.</li>
+    <li>A LOINC-coded vital pulls in the base FHIR vital-signs profile, which requires a UCUM
+      <code>system</code> and <code>code</code> on the Quantity — a bare unit string fails.</li>
+    <li><code>Provenance.target</code> is restricted to ServiceRequest; targeting the Task too
+      is an error.</li>
+    <li><code>ServiceRequest.occurrence[x]</code> is sliced closed on
+      <code>occurrenceDateTime</code>, which is what makes a telemedicine window inexpressible.</li>
+  </ol>
+
+  <p style="margin-top:.6rem">Seventy tests, static analysis at level 7, and four fixtures at
+    <strong>0 errors</strong> against both IGs.</p>
+
+  <div class="sec-head">
+    <span class="eyebrow">10 · Sequencing</span>
+    <h2>First slice — built</h2>
+  </div>
+
+  <p>One referral, one patient, both IDs present, referral system to telemedicine system, validating
+    green in CI. Nothing else. This proved every layer of the design in a single path — all seven
+    steps are done.</p>
+
+  <div class="card">
+    <ol class="slice">
+      <li>Constants module — identifier system URIs, canonical URLs, binding codes</li>
+      <li>Registry table and <code>GET /registry/v1/hcpn</code>, seeded with two rows</li>
+      <li>Intake endpoint with schema validation and idempotency</li>
+      <li>Builders: Patient, Organization, Practitioner, PractitionerRole, ServiceRequest, Task,
+        Encounter, Condition, Observation, Provenance</li>
+      <li>Bundle assembler — transaction, <code>urn:uuid</code> references, conditional writes</li>
+      <li>Two golden fixtures through the validator, wired into the existing CI gate</li>
+      <li>Delivery to the telemedicine system, with patient resolution at the receiver</li>
+    </ol>
+  </div>
+
+  <p style="margin-top:.6rem">Two things came out differently than planned, both for the same
+    reason. <strong>The conflicting-hit branch was built after all</strong> — leaving it out would
+    have meant silently merging charts, which is worse than the work of implementing the refusal.
+    <strong>Retries were not built, and will not be.</strong> A queue has to store the payload
+    somewhere, and the payload is a patient's referral; since the sending system already owns the
+    native record, it is the right place for it to wait. A failed submission is reported back and
+    the sender resubmits the same <code>message_id</code>, which re-attempts rather than duplicating.</p>
+
+  <p style="margin-top:.6rem">Still excluded: authentication, attachments as
+    <code>DocumentReference</code>, and anything involving an external HCPN.</p>
+
+  <div class="sec-head">
+    <span class="eyebrow">11 · Record</span>
+    <h2>What this session changed</h2>
+  </div>
+
+  <details class="qa">
+    <summary>Two positions were reversed during review</summary>
+    <div>
+      <span><strong>A gateway-side patient match table was proposed, then dropped.</strong> It would
+        have required storing names and birth dates, which contradicts the no-storage constraint, and
+        it could not have worked on first contact anyway — a table that learns from traffic has
+        nothing to match against the first time it sees a patient. Requiring both IDs at triage
+        removes the need for it entirely.</span>
+      <span><strong>Questions about the MPI's availability were withdrawn.</strong> With identity
+        settled at capture, the MPI is no longer on the request path by default, so its uptime is not
+        a blocking concern for v1.</span>
+    </div>
+  </details>
+
+  <footer class="foot">
+    PH Core 0.2.0 · PH eReferral 0.1.0 · FHIR R4 4.0.1 · companion docs: overview.md, tasks.md, intake-contract.md
+  </footer>
+
+</div>

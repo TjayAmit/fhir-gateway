@@ -1,0 +1,89 @@
+{
+    "resourceType": "Patient",
+    "id": "synthetic-phcore",
+    "meta": {
+        "profile": [
+            "https://fhir.doh.gov.ph/phcore/StructureDefinition/ph-core-patient"
+        ]
+    },
+    "extension": [
+        {
+            "url": "https://fhir.doh.gov.ph/phcore/StructureDefinition/indigenous-people",
+            "valueBoolean": true
+        },
+        {
+            "url": "https://fhir.doh.gov.ph/phcore/StructureDefinition/educational-attainment",
+            "valueCodeableConcept": {
+                "coding": [
+                    {
+                        "system": "https://fhir.doh.gov.ph/phcore/CodeSystem/PSCED",
+                        "code": "30",
+                        "display": "College"
+                    }
+                ]
+            }
+        }
+    ],
+    "identifier": [
+        {
+            "system": "http://philsys.gov.ph/fhir/Identifier/philsys-id",
+            "value": "1234-5678-9012-3456"
+        },
+        {
+            "system": "http://philhealth.gov.ph/fhir/Identifier/philhealth-id",
+            "value": "12-345678901-2"
+        }
+    ],
+    "name": [
+        {
+            "family": "Reyes",
+            "given": [
+                "Ana",
+                "Maria"
+            ]
+        }
+    ],
+    "gender": "female",
+    "_gender": {
+        "extension": [
+            {
+                "url": "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+                "valueCode": "masked"
+            }
+        ]
+    },
+    "birthDate": "1990-03-15",
+    "_birthDate": {
+        "extension": [
+            {
+                "url": "http://hl7.org/fhir/StructureDefinition/patient-birthTime",
+                "valueDateTime": "1990-03-15T08:30:00+08:00"
+            }
+        ]
+    },
+    "address": [
+        {
+            "extension": [
+                {
+                    "url": "https://fhir.doh.gov.ph/phcore/StructureDefinition/barangay",
+                    "valueCoding": {
+                        "system": "https://fhir.doh.gov.ph/phcore/CodeSystem/PSGC",
+                        "code": "060402001"
+                    }
+                },
+                {
+                    "url": "https://fhir.doh.gov.ph/phcore/StructureDefinition/province",
+                    "valueCoding": {
+                        "system": "https://fhir.doh.gov.ph/phcore/CodeSystem/PSGC",
+                        "code": "0604"
+                    }
+                }
+            ],
+            "city": "Kalibo",
+            "country": "PH",
+            "state": "Aklan"
+        }
+    ],
+    "deceasedBoolean": false,
+    "multipleBirthInteger": 2
+}
