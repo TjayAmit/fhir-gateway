@@ -3,7 +3,7 @@
     "type": "transaction",
     "entry": [
         {
-            "fullUrl": "urn:uuid:c0a41cf5-c322-499e-9e6f-efee9fb8765d",
+            "fullUrl": "urn:uuid:df2755f7-2ca2-461e-8202-59d9edf55091",
             "resource": {
                 "resourceType": "Patient",
                 "meta": {
@@ -91,7 +91,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:9c5615d8-a57e-40f6-b6d3-4ee93bd63415",
+            "fullUrl": "urn:uuid:2675f820-f820-4050-986c-ed7261059f80",
             "resource": {
                 "resourceType": "Practitioner",
                 "meta": {
@@ -129,7 +129,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:b14dccf8-f120-4715-968e-7c5e398d30ff",
+            "fullUrl": "urn:uuid:477f831b-5f1d-4a24-9d06-e1a0408ff5c4",
             "resource": {
                 "resourceType": "Organization",
                 "meta": {
@@ -152,7 +152,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:4ac36b2c-5ff5-42ae-8de0-3eb47befa8ea",
+            "fullUrl": "urn:uuid:608a914e-b1fd-4951-99f2-c9518652dcca",
             "resource": {
                 "resourceType": "Organization",
                 "meta": {
@@ -175,7 +175,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:e9782bff-80bd-4a1f-b48c-baaa2cbc378b",
+            "fullUrl": "urn:uuid:e470480f-5543-4da7-988e-dc8e10f0b4b5",
             "resource": {
                 "resourceType": "PractitionerRole",
                 "meta": {
@@ -191,10 +191,10 @@
                 ],
                 "active": true,
                 "practitioner": {
-                    "reference": "urn:uuid:9c5615d8-a57e-40f6-b6d3-4ee93bd63415"
+                    "reference": "urn:uuid:2675f820-f820-4050-986c-ed7261059f80"
                 },
                 "organization": {
-                    "reference": "urn:uuid:b14dccf8-f120-4715-968e-7c5e398d30ff"
+                    "reference": "urn:uuid:477f831b-5f1d-4a24-9d06-e1a0408ff5c4"
                 },
                 "code": [
                     {
@@ -214,7 +214,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:f91f5b32-ea66-48be-b9fd-9142a10dfcf9",
+            "fullUrl": "urn:uuid:dff34f30-00f1-40b6-959a-289b9d65d092",
             "resource": {
                 "resourceType": "Condition",
                 "meta": {
@@ -242,7 +242,7 @@
                     "text": "Essential (primary) hypertension"
                 },
                 "subject": {
-                    "reference": "urn:uuid:c0a41cf5-c322-499e-9e6f-efee9fb8765d"
+                    "reference": "urn:uuid:df2755f7-2ca2-461e-8202-59d9edf55091"
                 },
                 "recordedDate": "2026-09-07T10:15:00+08:00"
             },
@@ -252,7 +252,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:5f06dbcf-aae4-46e5-bb92-48b94d20c4d7",
+            "fullUrl": "urn:uuid:a451b5d1-db0d-4148-a18b-08eb4e53e3f2",
             "resource": {
                 "resourceType": "Observation",
                 "meta": {
@@ -283,7 +283,7 @@
                     "text": "Body weight"
                 },
                 "subject": {
-                    "reference": "urn:uuid:c0a41cf5-c322-499e-9e6f-efee9fb8765d"
+                    "reference": "urn:uuid:df2755f7-2ca2-461e-8202-59d9edf55091"
                 },
                 "effectiveDateTime": "2026-09-07T10:00:00+08:00",
                 "valueQuantity": {
@@ -299,7 +299,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:1c8e04f7-37d3-4232-b05a-026c61d2129b",
+            "fullUrl": "urn:uuid:e5ccad76-7bda-4a50-8d04-ab57d1084ff4",
             "resource": {
                 "resourceType": "ServiceRequest",
                 "meta": {
@@ -326,17 +326,23 @@
                     }
                 ],
                 "priority": "routine",
+                "code": {
+                    "text": "Telemedicine consultation (video)"
+                },
+                "performerType": {
+                    "text": "internal-medicine"
+                },
                 "subject": {
-                    "reference": "urn:uuid:c0a41cf5-c322-499e-9e6f-efee9fb8765d"
+                    "reference": "urn:uuid:df2755f7-2ca2-461e-8202-59d9edf55091"
                 },
                 "occurrenceDateTime": "2026-09-09T09:00:00+08:00",
                 "authoredOn": "2026-09-07T10:15:00+08:00",
                 "requester": {
-                    "reference": "urn:uuid:e9782bff-80bd-4a1f-b48c-baaa2cbc378b"
+                    "reference": "urn:uuid:e470480f-5543-4da7-988e-dc8e10f0b4b5"
                 },
                 "performer": [
                     {
-                        "reference": "urn:uuid:4ac36b2c-5ff5-42ae-8de0-3eb47befa8ea"
+                        "reference": "urn:uuid:608a914e-b1fd-4951-99f2-c9518652dcca"
                     }
                 ],
                 "reasonCode": [
@@ -353,12 +359,12 @@
                 ],
                 "reasonReference": [
                     {
-                        "reference": "urn:uuid:f91f5b32-ea66-48be-b9fd-9142a10dfcf9"
+                        "reference": "urn:uuid:dff34f30-00f1-40b6-959a-289b9d65d092"
                     }
                 ],
                 "supportingInfo": [
                     {
-                        "reference": "urn:uuid:5f06dbcf-aae4-46e5-bb92-48b94d20c4d7"
+                        "reference": "urn:uuid:a451b5d1-db0d-4148-a18b-08eb4e53e3f2"
                     }
                 ],
                 "note": [
@@ -373,7 +379,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:06417937-f434-4aaa-94b6-7a6a2cc3f6fb",
+            "fullUrl": "urn:uuid:11f00e87-b105-42de-9afa-bc2880df78cf",
             "resource": {
                 "resourceType": "Task",
                 "meta": {
@@ -400,18 +406,18 @@
                     "text": "Follow-up for hypertension, stable, requesting teleconsult instead of clinic visit"
                 },
                 "focus": {
-                    "reference": "urn:uuid:1c8e04f7-37d3-4232-b05a-026c61d2129b"
+                    "reference": "urn:uuid:e5ccad76-7bda-4a50-8d04-ab57d1084ff4"
                 },
                 "for": {
-                    "reference": "urn:uuid:c0a41cf5-c322-499e-9e6f-efee9fb8765d"
+                    "reference": "urn:uuid:df2755f7-2ca2-461e-8202-59d9edf55091"
                 },
                 "authoredOn": "2026-09-07T10:15:00+08:00",
                 "lastModified": "2026-09-07T10:15:00+08:00",
                 "requester": {
-                    "reference": "urn:uuid:e9782bff-80bd-4a1f-b48c-baaa2cbc378b"
+                    "reference": "urn:uuid:e470480f-5543-4da7-988e-dc8e10f0b4b5"
                 },
                 "owner": {
-                    "reference": "urn:uuid:4ac36b2c-5ff5-42ae-8de0-3eb47befa8ea"
+                    "reference": "urn:uuid:608a914e-b1fd-4951-99f2-c9518652dcca"
                 }
             },
             "request": {
@@ -421,7 +427,7 @@
             }
         },
         {
-            "fullUrl": "urn:uuid:0f4191f4-df6a-4f69-9e42-f6bcd8faca61",
+            "fullUrl": "urn:uuid:69169ace-f659-424b-bd31-a9eeff0eb945",
             "resource": {
                 "resourceType": "Provenance",
                 "meta": {
@@ -431,7 +437,7 @@
                 },
                 "target": [
                     {
-                        "reference": "urn:uuid:1c8e04f7-37d3-4232-b05a-026c61d2129b"
+                        "reference": "urn:uuid:e5ccad76-7bda-4a50-8d04-ab57d1084ff4"
                     }
                 ],
                 "recorded": "2026-09-07T10:15:00+08:00",
@@ -447,7 +453,7 @@
                             ]
                         },
                         "who": {
-                            "reference": "urn:uuid:e9782bff-80bd-4a1f-b48c-baaa2cbc378b"
+                            "reference": "urn:uuid:e470480f-5543-4da7-988e-dc8e10f0b4b5"
                         }
                     },
                     {
@@ -461,7 +467,7 @@
                             ]
                         },
                         "who": {
-                            "reference": "urn:uuid:b14dccf8-f120-4715-968e-7c5e398d30ff"
+                            "reference": "urn:uuid:477f831b-5f1d-4a24-9d06-e1a0408ff5c4"
                         }
                     }
                 ]

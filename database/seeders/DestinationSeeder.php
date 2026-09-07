@@ -31,9 +31,29 @@ class DestinationSeeder extends Seeder
                 'nhfr_code' => 'DOH000000000000001',
                 'hcpn_code' => null,
                 'endpoint_url' => config('fhir.internal.telemedicine_endpoint'),
+                'inbound_url' => config('fhir.internal.telemedicine_inbound_url'),
+                'patient_search_url' => config('fhir.internal.telemedicine_patient_search_url'),
                 'auth_type' => 'bearer',
                 'auth_credential_key' => 'telemedicine_token',
                 'accepts' => ['referral', 'telemedicine'],
+                'active' => true,
+            ],
+        );
+
+        // Our referral system. It is a destination in its own right: a facility can refer a
+        // patient *to* us, and that referral has to land somewhere.
+        Destination::query()->updateOrCreate(
+            ['hcpn_id' => 'referral-internal'],
+            [
+                'display_name' => 'Referral System',
+                'city' => 'Internal',
+                'nhfr_code' => (string) config('fhir.internal.referral_facility'),
+                'endpoint_url' => null,
+                'inbound_url' => config('fhir.internal.referral_inbound_url'),
+                'patient_search_url' => config('fhir.internal.referral_patient_search_url'),
+                'auth_type' => 'bearer',
+                'auth_credential_key' => 'referral_token',
+                'accepts' => ['referral'],
                 'active' => true,
             ],
         );

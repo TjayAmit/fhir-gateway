@@ -24,7 +24,29 @@ Two rules drive the whole shape:
 GET  /api/registry/v1/hcpn                  → the destination picklist
 POST /api/intake/v1/requests                → submit
 GET  /api/intake/v1/requests/{message_id}   → status
+GET  /api/fhir/Task                         → referral status, as FHIR
+GET  /api/fhir/Task/{id}                    → one referral
 ```
+
+### Authentication
+
+Every route needs a bearer token issued to your system:
+
+```
+Authorization: Bearer <your token>
+```
+
+Missing or unknown tokens get `401` with an `OperationOutcome`. The token is more than a
+password — it *is* your identity here:
+
+- **You can only submit as yourself.** `source.system` in the body must be a system your token
+  owns. The referral system cannot file referrals attributed to telemedicine.
+- **Your facility is attached to the token, not the request.** Reads are filtered by it
+  server-side, and no query parameter can widen that.
+- **Requests are rate limited per client**, not per IP — our systems share egress, so IP-keyed
+  limits would have them throttling each other.
+
+Tokens live in the environment (`GATEWAY_TOKEN_*`), never in the database.
 
 ### `GET /api/registry/v1/hcpn`
 
@@ -78,6 +100,19 @@ Status object:
 ```
 
 `status` is one of `pending`, `sending`, `delivered`, `failed`.
+
+### `GET /api/fhir/Task`
+
+Referral status in FHIR, as a `searchset` Bundle. Supported parameters: `status`,
+`business-status`, `_count` (max 200), `_sort`. **Anything else is a `400`, not an
+ignored filter** — silently dropping a parameter would return more than you asked for.
+
+You see referrals your facility sent or received. A Task outside your scope answers `404`,
+exactly as a Task that does not exist would: distinguishing them would confirm a referral
+exists to someone with no right to know.
+
+These Tasks carry workflow state only — no reason, no diagnosis, no note. The gateway stores
+none of that, so there is none to return.
 
 **Retry is the sender's job, and that is deliberate.** The gateway stores no payload, so it
 cannot rebuild a failed referral on its own. A `202` with `status: failed` means: nothing was
@@ -298,6 +333,9 @@ fetchable URL at all.
 | `patient.address.*_psgc` | PH Core address extensions, **`Coding`** on `https://psa.gov.ph/classification/psgc` |
 | `referral.category` | `ServiceRequest.category` (SNOMED, required binding) |
 | `referral.service_type` | `ServiceRequest.reasonCode` (SNOMED, required binding) |
+| `referral.service_requested` | `ServiceRequest.code.text` |
+| `referral.specialty` | `ServiceRequest.performerType.text` |
+| `telemedicine.modality` | `ServiceRequest.code.text`, as `Telemedicine consultation (video)` |
 | `clinical.encounter` | `Encounter` |
 | `clinical.diagnoses` | `Condition` → `ServiceRequest.reasonReference` |
 | `clinical.vitals` | `Observation` → `ServiceRequest.supportingInfo` |
@@ -310,6 +348,23 @@ php artisan fhir:build-referral tests/fixtures/intake/referral-kalibo.json \
     --out=tests/fixtures/fhir/generated-referral-bundle.json
 php artisan fhir:validate tests/fixtures/fhir/generated-referral-bundle.json
 ```
+
+---
+
+## What the wire format cannot carry
+
+The gateway can translate a Bundle back into this contract (`ReferralBundleReader`), and a
+round-trip test runs every fixture out and back to prove the mapping loses nothing by accident.
+These four are lost **on purpose**, and are the complete list:
+
+| Field | Why |
+|---|---|
+| `telemedicine.preferred_windows[].end` | The profile allows only a dateTime, so the end survives as prose in the note |
+| `destination.department` | Ours, not the IG's. Nothing in an eReferral Bundle holds it |
+| `source.system` | Not on the wire by design; recovered from the authenticated client on the way back in |
+| `attachments` | Accepted and validated, not yet translated |
+
+Anything else failing to come home is a bug, and the round-trip test will say so.
 
 ---
 

@@ -17,6 +17,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $city
  * @property string|null $phone
  * @property string|null $endpoint_url
+ * @property string|null $inbound_url
+ * @property string|null $patient_search_url
  * @property string|null $auth_type
  * @property string|null $auth_credential_key
  * @property list<string>|null $accepts
@@ -32,6 +34,8 @@ class Destination extends Model
         'hcpn_code',
         'phone',
         'endpoint_url',
+        'inbound_url',
+        'patient_search_url',
         'auth_type',
         'auth_credential_key',
         'accepts',
@@ -53,6 +57,21 @@ class Destination extends Model
     public function isDeliverable(): bool
     {
         return $this->active && $this->endpoint_url !== null && $this->endpoint_url !== '';
+    }
+
+    /**
+     * One of our own systems that can be handed a referral received from elsewhere.
+     * See docs/native-contract.md.
+     */
+    public function canReceiveInbound(): bool
+    {
+        return $this->active && $this->inbound_url !== null && $this->inbound_url !== '';
+    }
+
+    /** One of our own systems that can answer "do you know this patient?". */
+    public function canSearchPatients(): bool
+    {
+        return $this->active && $this->patient_search_url !== null && $this->patient_search_url !== '';
     }
 
     public function acceptsRequestType(string $requestType): bool

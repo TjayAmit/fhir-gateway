@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Models\AuditEvent;
 use App\Models\Destination;
+use App\Models\ReferralTask;
 
 /**
  * The policy layer: who may call, as whom, and what they are allowed to see.
  */
-
 function seedDestination(): void
 {
     Destination::query()->create([
@@ -68,7 +69,7 @@ it('will not let a client submit as another system', function () {
 
 it('ignores a facility supplied in the query and uses the token scope', function () {
     // Two referrals: one involving our facility, one between two others.
-    App\Models\ReferralTask::query()->create([
+    ReferralTask::query()->create([
         'fhir_task_id' => 'task-ours',
         'fhir_service_request_id' => 'sr-1',
         'direction' => 'outbound',
@@ -77,7 +78,7 @@ it('ignores a facility supplied in the query and uses the token scope', function
         'performer_facility' => 'DOH000000000000001',
     ]);
 
-    App\Models\ReferralTask::query()->create([
+    ReferralTask::query()->create([
         'fhir_task_id' => 'task-theirs',
         'fhir_service_request_id' => 'sr-2',
         'direction' => 'outbound',
@@ -101,7 +102,7 @@ it('ignores a facility supplied in the query and uses the token scope', function
 });
 
 it('answers out-of-scope and not-found identically', function () {
-    App\Models\ReferralTask::query()->create([
+    ReferralTask::query()->create([
         'fhir_task_id' => 'task-theirs',
         'fhir_service_request_id' => 'sr-2',
         'direction' => 'outbound',
@@ -121,7 +122,7 @@ it('answers out-of-scope and not-found identically', function () {
 });
 
 it('refuses a client with no facility scope rather than returning everything', function () {
-    App\Models\ReferralTask::query()->create([
+    ReferralTask::query()->create([
         'fhir_task_id' => 'task-ours',
         'fhir_service_request_id' => 'sr-1',
         'direction' => 'outbound',
@@ -152,7 +153,7 @@ it('throttles a client that hammers the search endpoint', function () {
 it('audits reads with the scope filter that was applied', function () {
     $this->withHeaders(asClient())->getJson('/api/fhir/Task')->assertOk();
 
-    $audit = App\Models\AuditEvent::query()->latest('id')->firstOrFail();
+    $audit = AuditEvent::query()->latest('id')->firstOrFail();
 
     expect($audit->action)->toBe('search')
         ->and($audit->actor_client_id)->toBe('referral')
@@ -160,4 +161,51 @@ it('audits reads with the scope filter that was applied', function () {
         // The proof that a scope filter was applied, recorded alongside the request.
         ->and($audit->scope_filter)->toBe('facility=3056')
         ->and($audit->result_count)->toBe(0);
+});
+
+it('accepts a verified client certificate when mTLS is enabled', function () {
+    config()->set('fhir.client_auth.modes', ['mtls', 'token']);
+    asClient();
+    config()->set('fhir.clients.hcpn-facility', [
+        'token' => null,
+        'fingerprint' => 'AB:CD:EF:12:34',
+        'facility' => '513',
+        'systems' => ['referral'],
+    ]);
+
+    $this->withHeaders([
+        'X-Client-Verify' => 'SUCCESS',
+        'X-Client-Fingerprint' => 'AB:CD:EF:12:34',
+    ])->getJson('/api/registry/v1/hcpn')->assertOk();
+});
+
+it('refuses a certificate fingerprint the proxy did not verify', function () {
+    config()->set('fhir.client_auth.modes', ['mtls']);
+    asClient();
+    config()->set('fhir.client_auth.modes', ['mtls']);
+    config()->set('fhir.clients.hcpn-facility', [
+        'fingerprint' => 'AB:CD:EF:12:34',
+        'facility' => '513',
+        'systems' => ['referral'],
+    ]);
+
+    // A fingerprint header alone proves nothing — anyone can send one. Without the proxy
+    // saying the chain verified, it is refused.
+    $this->withHeaders(['X-Client-Fingerprint' => 'AB:CD:EF:12:34'])
+        ->getJson('/api/registry/v1/hcpn')
+        ->assertStatus(401);
+
+    $this->withHeaders([
+        'X-Client-Verify' => 'FAILED',
+        'X-Client-Fingerprint' => 'AB:CD:EF:12:34',
+    ])->getJson('/api/registry/v1/hcpn')->assertStatus(401);
+});
+
+it('ignores certificate headers entirely when mTLS is off', function () {
+    asClient(); // token mode only, the default
+
+    $this->withHeaders([
+        'X-Client-Verify' => 'SUCCESS',
+        'X-Client-Fingerprint' => 'AB:CD:EF:12:34',
+    ])->getJson('/api/registry/v1/hcpn')->assertStatus(401);
 });

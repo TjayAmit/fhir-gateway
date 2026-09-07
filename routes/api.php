@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\InboundReferralController;
 use App\Http\Controllers\Api\IntakeController;
+use App\Http\Controllers\Api\PatientSearchController;
 use App\Http\Controllers\Api\RegistryController;
 use App\Http\Controllers\Api\TaskSearchController;
 use Illuminate\Support\Facades\Route;
@@ -14,10 +16,11 @@ use Illuminate\Support\Facades\Route;
  * The token is also the scope: a client's facility comes from its configuration, never from
  * the request, and reads are filtered by it server-side.
  *
- * Three surfaces:
+ * Four surfaces:
  *   - registry, so a sender can choose a destination without knowing how we reach it
  *   - intake, where a plain-JSON referral becomes a PH Core / eReferral submission
- *   - Task, the FHIR-shaped read side: what happened to a referral
+ *   - Task and Patient, the FHIR-shaped read side
+ *   - POST /fhir, where a facility refers a patient to us
  */
 
 Route::middleware('gateway.client')->group(function (): void {
@@ -36,8 +39,23 @@ Route::middleware('gateway.client')->group(function (): void {
             ->name('intake.requests.show');
     });
 
-    Route::prefix('fhir')->middleware('throttle:fhir-search')->group(function (): void {
-        Route::get('Task', [TaskSearchController::class, 'index'])->name('fhir.task.index');
-        Route::get('Task/{id}', [TaskSearchController::class, 'show'])->name('fhir.task.show');
+    Route::prefix('fhir')->group(function (): void {
+        Route::get('Task', [TaskSearchController::class, 'index'])
+            ->middleware('throttle:fhir-search')
+            ->name('fhir.task.index');
+
+        Route::get('Task/{id}', [TaskSearchController::class, 'show'])
+            ->middleware('throttle:fhir-read')
+            ->name('fhir.task.show');
+
+        // Identifier lookup against the native systems. Tightest bucket of the three.
+        Route::get('Patient', [PatientSearchController::class, 'index'])
+            ->middleware('throttle:fhir-search')
+            ->name('fhir.patient.index');
     });
+
+    // Flow 2: a facility refers a patient to us. Posted to the FHIR base, as a transaction.
+    Route::post('fhir', [InboundReferralController::class, 'store'])
+        ->middleware('throttle:fhir-intake')
+        ->name('fhir.inbound.store');
 });

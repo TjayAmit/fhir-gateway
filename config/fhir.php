@@ -43,6 +43,26 @@ return [
     ],
 
     /*
+     * How a client proves who it is.
+     *
+     * `token` is a shared bearer secret and is what our own systems use. `mtls` is for external
+     * facilities: TLS terminates at the reverse proxy, which verifies the client certificate
+     * against our CA and forwards its fingerprint. The gateway trusts the *verify* header only
+     * when the proxy says the chain checked out, and matches the fingerprint to a client.
+     *
+     * Both are implemented; enabling mtls is a deployment decision, not a code change. OAuth2
+     * would be a third mode and is not written — it needs an authorization server that does not
+     * exist yet, and choosing it over mTLS is the open question in the plan.
+     */
+    'client_auth' => [
+        'modes' => array_filter(explode(',', (string) env('GATEWAY_AUTH_MODES', 'token'))),
+
+        // Set by the reverse proxy. Never accept these from an untrusted hop.
+        'mtls_verify_header' => env('GATEWAY_MTLS_VERIFY_HEADER', 'X-Client-Verify'),
+        'mtls_fingerprint_header' => env('GATEWAY_MTLS_FINGERPRINT_HEADER', 'X-Client-Fingerprint'),
+    ],
+
+    /*
      * Per-minute request ceilings. Patient-facing search is the tightest: an unthrottled
      * identifier search is an enumeration tool.
      */
@@ -58,6 +78,15 @@ return [
      */
     'internal' => [
         'telemedicine_endpoint' => env('TELEMEDICINE_FHIR_URL', 'http://localhost:8081/fhir'),
+
+        // The native contract endpoints each system exposes (docs/native-contract.md).
+        // Null until the system owners implement them; the gateway refuses rather than
+        // pretending it can deliver.
+        'referral_facility' => env('GATEWAY_FACILITY_REFERRAL', 'DOH000000000000002'),
+        'referral_inbound_url' => env('REFERRAL_INBOUND_URL'),
+        'referral_patient_search_url' => env('REFERRAL_PATIENT_SEARCH_URL'),
+        'telemedicine_inbound_url' => env('TELEMEDICINE_INBOUND_URL'),
+        'telemedicine_patient_search_url' => env('TELEMEDICINE_PATIENT_SEARCH_URL'),
     ],
 
     /*

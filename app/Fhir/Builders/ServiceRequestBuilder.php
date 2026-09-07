@@ -42,6 +42,8 @@ final class ServiceRequestBuilder
         array $reasonReferences = [],
         array $supportingInfo = [],
         ?string $note = null,
+        ?string $serviceRequested = null,
+        ?string $specialty = null,
     ): array {
         $categoryCoding = Constants::REFERRAL_CATEGORY[$category] ?? null;
 
@@ -84,6 +86,16 @@ final class ServiceRequestBuilder
                 ),
             ],
             'priority' => $priority,
+            // What was actually asked for, in the requester's words. The binding on .code is
+            // example-strength, so uncoded text is valid — and it is all the native systems
+            // give us. Leaving it out entirely was dropping the one field a receiving clerk
+            // most wants to read.
+            'code' => $serviceRequested !== null && $serviceRequested !== ''
+                ? ['text' => $serviceRequested]
+                : null,
+            'performerType' => $specialty !== null && $specialty !== ''
+                ? ['text' => $specialty]
+                : null,
             'subject' => Element::reference($subjectRef),
             'encounter' => $encounterRef !== null ? Element::reference($encounterRef) : null,
             'occurrenceDateTime' => $occurrenceDateTime,

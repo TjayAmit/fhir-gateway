@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Http\Middleware\AuthenticateGatewayClient;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -50,7 +51,7 @@ class AppServiceProvider extends ServiceProvider
 
                 return Limit::perMinute((int) config("fhir.rate_limits.{$bucket}"))
                     ->by($bucket.':'.$key)
-                    ->response(fn (): \Illuminate\Http\JsonResponse => response()->json([
+                    ->response(fn (): JsonResponse => response()->json([
                         'resourceType' => 'OperationOutcome',
                         'issue' => [[
                             'severity' => 'error',

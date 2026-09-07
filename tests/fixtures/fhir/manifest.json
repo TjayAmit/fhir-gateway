@@ -22,6 +22,11 @@
       "profile": null,
       "source": "tests/fixtures/intake/telemedicine-consult.json",
       "note": "Our output: telemedicine consult. Patient has PhilHealth only, so the upsert keys on it. Covers the occurrenceDateTime constraint that forbids a scheduling window"
+    },
+    {
+      "file": "task-searchset.json",
+      "profile": null,
+      "note": "Our read side: GET /api/fhir/Task searchset. Covers the three workflow states we render, identifier-only Organization references, and the absence of any clinical content"
     }
   ]
 }

@@ -143,6 +143,8 @@ final class ReferralBundleFactory
                 reasonReferences: $reasonReferences,
                 supportingInfo: $supportingInfo,
                 note: $this->note($clinical['notes'] ?? null, $details['note']),
+                serviceRequested: $details['service_requested'],
+                specialty: $details['specialty'],
             )
         );
 
@@ -227,7 +229,7 @@ final class ReferralBundleFactory
      * ends of the window, and the machine-readable half is honest about being a single instant.
      *
      * @param  array<string, mixed>  $intake
-     * @return array{category: string, service_type: string, priority: string, occurrence_date_time: ?string, note: ?string}
+     * @return array{category: string, service_type: string, priority: string, occurrence_date_time: ?string, note: ?string, service_requested: ?string, specialty: ?string}
      */
     private function requestDetails(array $intake): array
     {
@@ -247,6 +249,8 @@ final class ReferralBundleFactory
                 'priority' => (string) ($tele['priority'] ?? 'routine'),
                 'occurrence_date_time' => $window === null ? null : (string) $window['start'],
                 'note' => $note,
+                'service_requested' => 'Telemedicine consultation ('.($tele['modality'] ?? 'unspecified').')',
+                'specialty' => $tele['specialty'] ?? null,
             ];
         }
 
@@ -258,6 +262,8 @@ final class ReferralBundleFactory
             'priority' => (string) ($referral['priority'] ?? 'routine'),
             'occurrence_date_time' => (string) $intake['sent_at'],
             'note' => null,
+            'service_requested' => $referral['service_requested'] ?? null,
+            'specialty' => $referral['specialty'] ?? null,
         ];
     }
 }

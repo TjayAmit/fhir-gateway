@@ -430,8 +430,8 @@
       destination the sender never has to know about.</p>
     <div class="meta-row">
       <span><i class="dot"></i>Updated 7 Sep 2026</span>
-      <span>Phase 2 complete</span>
-      <span>First slice shipped</span>
+      <span>All five phases complete</span>
+      <span>Four flows live</span>
       <span>FHIR R4 · 4.0.1</span>
     </div>
   </header>
@@ -483,10 +483,13 @@ flowchart LR
 
   subgraph GW["FHIR Gateway"]
     direction TB
+    AUTH["Policy layer<br/>token · scope · rate limit · audit"]
     IN["Intake API<br/>POST /intake/v1/requests"]
     REG["Destination registry<br/>Organization + Endpoint"]
     TR["Translator<br/>JSON to PH Core / eReferral"]
     DEL["Delivery<br/>transaction Bundle"]
+    READ["Read API<br/>GET /fhir/Task · /fhir/Patient"]
+    INB["Inbound API<br/>POST /fhir"]
   end
 
   subgraph CI["Conformance"]
@@ -495,14 +498,20 @@ flowchart LR
 
   EXT["External HCPN facilities"]
 
-  REF --> IN
-  TEL --> IN
+  REF --> AUTH
+  TEL --> AUTH
+  AUTH --> IN
+  AUTH --> READ
+  READ -.->|native contract| REF
+  READ -.->|native contract| TEL
   IN --> TR
   REG --> TR
   TR --> DEL
   DEL --> TEL
   DEL --> REF
   DEL -.-> EXT
+  EXT -.->|refers to us| INB
+  INB -.->|native contract| REF
   TR -.->|golden fixtures| VAL
   MPI -.->|keeps records clean<br/>runtime role undecided| OURS
 </pre>
@@ -753,14 +762,19 @@ stateDiagram-v2
         <li>Patient lookup, register, ID backfill</li>
         <li>Referral and telemedicine request types</li>
         <li>Delivery between our two systems</li>
+        <li>Referral status reads as FHIR <code>Task</code></li>
+        <li>Patient lookup as FHIR, from the native systems</li>
+        <li>Inbound referrals from other facilities</li>
+        <li>Auth, scope filtering, rate limits, audit</li>
         <li>CI conformance gate</li>
       </ul>
     </div>
     <div class="card">
       <h3><span class="chip chip-deferred">Out</span></h3>
       <ul class="clean">
-        <li>Delivery to external HCPNs</li>
-        <li>HCPN reading or searching our data</li>
+        <li>Attachments as <code>DocumentReference</code></li>
+        <li>Polling — native systems are pushed to, not polled</li>
+        <li>OAuth2 — mTLS covers the same case</li>
         <li>Storing any clinical or demographic record</li>
         <li>Demographic or fuzzy patient matching</li>
         <li>Attachment hosting — references only</li>
@@ -836,8 +850,8 @@ stateDiagram-v2
     <h2>What runs today</h2>
   </div>
 
-  <p>The translation layer and the outbound flow are built and green. Three endpoints, two
-    console commands, and four golden fixtures that CI validates against the pinned IGs on
+  <p>All four flows are built, along with the policy layer that guards them. Seven endpoints,
+    two console commands, and five golden fixtures that CI validates against the pinned IGs on
     every push.</p>
 
   <div class="bleed"><div class="bleed-inner">
@@ -875,9 +889,38 @@ stateDiagram-v2
             <td class="tight"><span class="chip chip-locked">Built</span></td>
           </tr>
           <tr>
-            <td class="tight">Per-system auth</td>
-            <td>Bearer tokens on the intake and registry routes.</td>
-            <td class="tight"><span class="chip chip-open">Not wired</span></td>
+            <td class="tight"><code>GET /api/fhir/Task</code></td>
+            <td>Referral status as FHIR. Scope-filtered by the caller's facility; search
+              parameters allow-listed.</td>
+            <td class="tight"><span class="chip chip-locked">Built</span></td>
+          </tr>
+          <tr>
+            <td class="tight">Policy layer</td>
+            <td>Per-system bearer tokens, scope injection, per-client rate limits, audit on
+              every request.</td>
+            <td class="tight"><span class="chip chip-locked">Built</span></td>
+          </tr>
+          <tr>
+            <td class="tight"><code>GET /api/fhir/Patient</code></td>
+            <td>Identifier lookup, answered by the native systems and translated in flight.
+              Nothing cached.</td>
+            <td class="tight"><span class="chip chip-locked">Built</span></td>
+          </tr>
+          <tr>
+            <td class="tight"><code>POST /api/fhir</code></td>
+            <td>A facility refers a patient to us. Translated back to intake JSON and handed to
+              the native system.</td>
+            <td class="tight"><span class="chip chip-locked">Built</span></td>
+          </tr>
+          <tr>
+            <td class="tight">Client authentication</td>
+            <td>Bearer token, plus mTLS via a verifying reverse proxy. Mode is config.</td>
+            <td class="tight"><span class="chip chip-locked">Built</span></td>
+          </tr>
+          <tr>
+            <td class="tight">Native contract endpoints</td>
+            <td>The two endpoints the referral and telemedicine systems must expose.</td>
+            <td class="tight"><span class="chip chip-open">Theirs to build</span></td>
           </tr>
         </tbody>
       </table>
@@ -885,9 +928,12 @@ stateDiagram-v2
   </div></div>
 
   <div class="note">
-    <span><strong>These routes have no authentication yet.</strong> Do not expose them outside
-      the local network until per-system tokens are in place. It is the first task of the policy
-      phase.</span>
+    <span><strong>The token is the identity, not just a password.</strong> A client may only
+      submit as its own system, and its facility — which decides what it can read — comes from
+      configuration, never from the request. There is no query parameter that widens scope.</span>
+    <span>A Task outside your scope answers <code>404</code>, identically to one that does not
+      exist. Telling the two apart would confirm a referral exists to someone with no right to
+      know that.</span>
   </div>
 
   <h3>What the validator caught that PHP did not</h3>
@@ -905,8 +951,42 @@ stateDiagram-v2
       <code>occurrenceDateTime</code>, which is what makes a telemedicine window inexpressible.</li>
   </ol>
 
-  <p style="margin-top:.6rem">Seventy tests, static analysis at level 7, and four fixtures at
-    <strong>0 errors</strong> against both IGs.</p>
+  <h3>What unblocked the last two flows</h3>
+
+  <p>Flows 1 and 2 sat marked "blocked: we do not know the native schema" for most of this
+    project. That framing was the mistake. The gateway had already solved the same problem once,
+    in the other direction — it did not conform to a native schema for intake, it
+    <strong>defined the intake contract</strong> and had the native systems meet it.</p>
+
+  <p style="margin-top:.6rem">The reciprocal direction deserved the same treatment.
+    The native contract (<code>docs/native-contract.md</code>) specifies two endpoints each system exposes: one that
+    receives a referral as intake JSON, one that answers "do you know this patient". Both flows
+    were then buildable immediately, and the questions that had been blocking — which table,
+    which status, who is notified, what to do about an unknown patient — stopped being ours.
+    They are implementation details behind an interface, which is where they belonged.</p>
+
+  <div class="note">
+    <span><strong>The contract is written and called; it is not yet implemented.</strong> The
+      referral and telemedicine systems need to expose those two endpoints, and the gateway
+      refuses inbound referrals for a system that has not, rather than accepting something it
+      cannot pass on. That is the one signature still outstanding.</span>
+  </div>
+
+  <h3>What the round trip caught that nothing else did</h3>
+
+  <p>Translating a Bundle back into intake JSON is half of the inbound flow, and it can be built
+    now because what the wire format <em>means</em> does not depend on any native schema. Running
+    each fixture out through the factory and back through the reader turned up a defect the
+    validator could never have seen: <code>referral.service_requested</code> and
+    <code>referral.specialty</code> were validated on intake and then dropped in translation.
+    Conformant output, silently missing the field a receiving clerk most wants to read.</p>
+
+  <p style="margin-top:.6rem">They now travel on <code>ServiceRequest.code</code> and
+    <code>.performerType</code>. The same test pins down the four things the wire format
+    genuinely cannot carry, so a fifth appearing is a bug rather than a discovery.</p>
+
+  <p style="margin-top:.6rem">A hundred and thirteen tests, static analysis at level 7, and five
+    fixtures at <strong>0 errors</strong> against both IGs.</p>
 
   <div class="sec-head">
     <span class="eyebrow">10 · Sequencing</span>
@@ -938,8 +1018,10 @@ stateDiagram-v2
     native record, it is the right place for it to wait. A failed submission is reported back and
     the sender resubmits the same <code>message_id</code>, which re-attempts rather than duplicating.</p>
 
-  <p style="margin-top:.6rem">Still excluded: authentication, attachments as
-    <code>DocumentReference</code>, and anything involving an external HCPN.</p>
+  <p style="margin-top:.6rem">Authentication was also pulled forward rather than deferred: an
+    unauthenticated write endpoint that brokers patient data is not a slice boundary, it is a
+    hole. Still excluded: attachments as <code>DocumentReference</code>, and anything that needs
+    an external HCPN or a native database connector.</p>
 
   <div class="sec-head">
     <span class="eyebrow">11 · Record</span>

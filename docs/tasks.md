@@ -12,19 +12,25 @@ Last updated 2026-09-07.
 | 0 — Verify the package | ✅ **Complete** | 3 / 3 |
 | 1 — Setup | ✅ **Complete** | 9 / 9 |
 | 2 — PH Core layer | ✅ **Complete** | 6 / 6 |
-| 3 — Flows | 🟡 **First slice done** | 2 / 4 |
-| 4 — Policy layer | 🟡 In progress | 2 / 5 |
+| 3 — Flows | ✅ **Complete** | 5 / 5 |
+| 4 — Policy layer | ✅ **Complete** | 5 / 5 |
 
 **Working today**
 
 - `POST /api/intake/v1/requests` — plain JSON in, PH eReferral transaction Bundle out, delivered
 - `GET /api/registry/v1/hcpn` — destination picklist; unreachable facilities are not selectable
 - `GET /api/intake/v1/requests/{message_id}` — delivery status
+- `GET /api/fhir/Task` and `/api/fhir/Task/{id}` — referral status as FHIR, scope-filtered
+- `GET /api/fhir/Patient` — identifier lookup, answered by the native systems, nothing cached
+- `POST /api/fhir` — a facility refers a patient to us; translated and handed to the native system
+- Every route behind a per-system bearer token, rate limited per client, audited
 - `php artisan fhir:build-referral <intake.json> --out=<bundle.json>` — translate without sending
 - `php artisan fhir:validate <file> --profile=<canonical>` — conformance check
 - Patient identity resolved at the receiver: PhilSys → PhilHealth → register; `409` on conflict
-- **4 golden fixtures at 0 errors**, all gated in CI
-- 70 tests green, Pint green, PHPStan level 7 green
+- Reverse translation: Bundle → intake JSON, with a round-trip test over every fixture
+- Client auth in two modes: bearer token, and mTLS via a verifying reverse proxy
+- **5 golden fixtures at 0 errors**, all gated in CI
+- 113 tests green, Pint green, PHPStan level 7 green
 
 **Needs a decision from you**
 
@@ -33,7 +39,8 @@ Last updated 2026-09-07.
 | 1 | The React starter kit (Inertia, React, Fortify, Wayfinder) is unused by a headless gateway. Strip it? |
 | 2 | Confirm the `409` refusal on conflicting identifiers (implemented as the safe default) |
 | 3 | Telemedicine as `ServiceRequest` is confirmed lossy for scheduling windows — accept, or model `Appointment`? |
-| 4 | The blocked items at the bottom, with the native system owners |
+| 4 | Sign off [native-contract.md](native-contract.md) with the referral and telemedicine owners — the gateway calls it today, nothing implements it yet |
+| 5 | mTLS is built and is the default recommendation. Add OAuth2 as well, or is mTLS enough? |
 
 ---
 
@@ -98,39 +105,68 @@ Number 4 is the concrete confirmation of the open risk about telemedicine and `S
       gateway cannot rebuild one on its own)
 - [x] **Identity resolution** — PhilSys, then PhilHealth, then register. Missing identifiers
       backfill through the conditional PUT; conflicting ones are refused with `409`
-- [ ] **Flow 1** — `GET /fhir/Patient` search for HCPN reads
-- [ ] **Flow 4** — `GET /fhir/Task` referral status for HCPN reads
-- [ ] **Flow 2** — inbound referral: HCPN → translate → write to native ⚠️ *blocked, see below*
-
-Flows 1, 2 and 4 all assume an external HCPN, which v1 does not have. They stay unstarted by
-design, not by omission.
+- [x] **Flow 4** — `GET /fhir/Task` referral status. Served from `referral_tasks`, which we own,
+      so it needed no native connector. Scope filter injected from the token; search parameters
+      allow-listed; out-of-scope and not-found answer identically
+- [ ] **Flow 1** — `GET /fhir/Patient` search ⚠️ *blocked: needs read access to a native patient
+      database. We hold no patient records (D1), so there is nothing to search until a native
+      connector exists, and its shape depends on a schema we have not seen*
+- [x] **Flow 2** — `POST /api/fhir`. A facility's Bundle is translated back into intake JSON by
+      `ReferralBundleReader` and handed to the native system over the native contract. The
+      round-trip test this enabled immediately found a real defect: `referral.service_requested`
+      and `specialty` were validated on intake and then silently dropped in translation — now
+      carried on `ServiceRequest.code` and `.performerType`
+- [x] **Flow 1** — `GET /api/fhir/Patient`. Identifier lookup only; the gateway asks the native
+      systems and translates the answer without keeping a copy. Name and birth-date search are
+      refused outright, because a search surface that can be walked is an enumeration tool
 
 ---
 
 ## Phase 4 — Policy layer
 
-- [x] Audit log on every submission — `audit_events`, including patient identifiers by design
-- [x] Search parameter allowlist for intake — strict schema validation, `OperationOutcome` on failure
-- [ ] HCPN authentication (mTLS or OAuth2 — undecided)
-- [ ] Per-system bearer tokens on the intake and registry routes ⚠️ *not yet wired; do not
-      expose these routes outside the local network*
-- [ ] Rate limiting on patient search
+- [x] **Audit log on every request** — submissions and reads, with the scope filter that was
+      applied. Actor comes from the token, never the body
+- [x] **Search parameter allowlist** — strict schema on intake, explicit allowlist on `Task`.
+      An unrecognised parameter is refused, never ignored: silently dropping a filter returns
+      more than the caller asked for
+- [x] **Per-system bearer tokens** on every route. A client may only submit as its own system,
+      so the referral system cannot file referrals attributed to telemedicine
+- [x] **Server-side scope injection** — a client's facility comes from its config, and reads are
+      filtered by it. No query parameter can widen it
+- [x] **Rate limiting** — per client, not per IP; the search bucket is tightest, since an
+      unthrottled identifier search is an enumeration tool
+- [x] **HCPN authentication** — two modes, selected by config. `token` for our own systems;
+      `mtls` for external facilities, where the reverse proxy verifies the certificate chain and
+      forwards its fingerprint. The gateway refuses a fingerprint the proxy did not verify, since
+      a header alone proves nothing. OAuth2 is deliberately not written: it needs an
+      authorization server nobody has stood up, and mTLS already covers the case
 
 ---
 
-## Blocked — settle with native system owners
+## Waiting on the native system owners
 
-Flow 2 cannot be built until these are answered:
+Nothing here blocks gateway code any more. The questions that used to be blockers were
+dissolved by [native-contract.md](native-contract.md): the gateway defines the interface, and
+what happens behind it is the native systems' business.
 
-1. Which native table/status does an inbound referral write to? Who gets notified?
-2. Inbound referral for a patient not yet in our systems
-3. Do native systems push to the gateway, or does the gateway poll them?
-4. Can they expose a fetchable URL for attachments?
-5. Do they store PSGC codes, or only address text?
+What they need to do:
+
+1. **Implement the two endpoints** in the native contract, and tell us their URLs.
+2. Decide push vs poll. Push is implemented; poll would need a different design.
+3. Confirm whether the gateway can fetch attachment URLs, and with what credential.
+4. Confirm whether they store PSGC codes or only address text. If text, a lookup table is
+   unscoped work.
+
+Questions 1 and 2 from the old list — which table, which status, who is notified, and what to
+do about an unknown patient — are now theirs to answer inside their own systems. The gateway
+does not need to know.
 
 ---
 
 ## Order
 
-Phase 0 → 1 → 2 → 3 (flow 3 ✅) → 4.
-Flows 1, 2 and 4 wait for an external HCPN and for the blocked items to clear.
+Phase 0 → 1 → 2 → 3 → 4. **All five phases are complete.**
+
+Every flow in the plan is built, tested and conformance-checked. What is left is not gateway
+work: two endpoints for the native systems to implement, and a signature on the contract that
+describes them.

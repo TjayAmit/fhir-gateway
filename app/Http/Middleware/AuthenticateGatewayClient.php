@@ -27,21 +27,78 @@ class AuthenticateGatewayClient
 
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->bearerToken();
+        $modes = (array) config('fhir.client_auth.modes', ['token']);
+        $client = null;
 
-        if ($token === null || $token === '') {
-            return $this->deny('A bearer token is required.');
+        if (in_array('mtls', $modes, true)) {
+            $client = $this->resolveByCertificate($request);
         }
 
-        $client = $this->resolve($token);
+        if ($client === null && in_array('token', $modes, true)) {
+            $token = $request->bearerToken();
+
+            if ($token !== null && $token !== '') {
+                $client = $this->resolve($token);
+            }
+        }
 
         if ($client === null) {
-            return $this->deny('The bearer token is not recognised.');
+            return $this->deny(
+                in_array('mtls', $modes, true)
+                    ? 'A recognised client certificate or bearer token is required.'
+                    : 'A valid bearer token is required.'
+            );
         }
 
         $request->attributes->set(self::ATTRIBUTE, $client);
 
         return $next($request);
+    }
+
+    /**
+     * Mutual TLS, terminated at the reverse proxy.
+     *
+     * PHP never sees the handshake, so the proxy tells us two things: whether the certificate
+     * chain verified, and its fingerprint. We refuse unless verification actually succeeded —
+     * a fingerprint alone proves nothing, since anyone can send a header.
+     *
+     * This means the proxy must strip both headers from inbound requests. If it does not, a
+     * caller can forge either one, and no amount of care here helps.
+     *
+     * @return array{id: string, facility: ?string, systems: list<string>}|null
+     */
+    private function resolveByCertificate(Request $request): ?array
+    {
+        $verify = (string) $request->header((string) config('fhir.client_auth.mtls_verify_header'), '');
+
+        // nginx says SUCCESS; Apache says SUCCESS too. Anything else is a failed or absent chain.
+        if (strcasecmp($verify, 'SUCCESS') !== 0) {
+            return null;
+        }
+
+        $fingerprint = (string) $request->header((string) config('fhir.client_auth.mtls_fingerprint_header'), '');
+
+        if ($fingerprint === '') {
+            return null;
+        }
+
+        /** @var array<string, array<string, mixed>> $clients */
+        $clients = (array) config('fhir.clients', []);
+        $matched = null;
+
+        foreach ($clients as $id => $client) {
+            $configured = (string) ($client['fingerprint'] ?? '');
+
+            if ($configured !== '' && hash_equals($configured, $fingerprint)) {
+                $matched = [
+                    'id' => (string) $id,
+                    'facility' => isset($client['facility']) ? (string) $client['facility'] : null,
+                    'systems' => array_values((array) ($client['systems'] ?? [$id])),
+                ];
+            }
+        }
+
+        return $matched;
     }
 
     /**
